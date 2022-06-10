@@ -21,11 +21,12 @@ var TOKEN_DIR = (process.env.HOME || process.env.HOMEPATH ||
 
 exports.index = async function(req, res, next) {
 
+    console.log("in index controller");
     let credentials = await helpers.getClientSecret()
 
     var clientSecret = credentials.web.client_secret;
     var clientId = credentials.web.client_id;
-    var redirectUrl = credentials.web.redirect_uris[0];
+    var redirectUrl = process.env.googleApiReturnURL;
     var oauth2Client = new OAuth2(clientId, clientSecret, redirectUrl);
 
 
