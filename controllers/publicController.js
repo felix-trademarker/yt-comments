@@ -6,6 +6,9 @@ let gmailService = require('../services/gmailApiService')
 
 let rpoAccounts = require('../models/accounts')
 let rpoVideos = require('../models/videos')
+let rpoVideoList = require('../models/videoList')
+let rpoProductions = require('../models/productions')
+let moment = require('moment')
 
 var SCOPES = ['https://www.googleapis.com/auth/youtube',
               'https://www.googleapis.com/auth/youtube.upload',
@@ -47,7 +50,7 @@ exports.index = async function(req, res, next) {
             oauth2Client.credentials = token;
             let gmailProfile = await gmailService.getGmailProfile(oauth2Client)
 
-            console.log(oauth2Client);
+            // console.log(oauth2Client);
             let data = token;
 
             if(gmailProfile.emailAddresses){
@@ -65,7 +68,51 @@ exports.index = async function(req, res, next) {
             if (findAccount && findAccount.length > 0) {
                 rpoAccounts.update(findAccount[0]._id, data)
             } else {
-                rpoAccounts.put(data)
+
+                // change approached
+                // fetch cp.production
+
+                // assign video  
+                let productionAssignments = await rpoProductions.fetchOneAssign()
+                let productionAssignment;
+                let video;
+
+                console.log(productionAssignments);
+                // console.log(videos)
+                if (productionAssignments && productionAssignments.length > 0){
+                    productionAssignment = productionAssignments[0]
+
+                    rpoProductions.update(productionAssignment._id, {assignedGmailAccount:true, assignedGmailAccountTo:data.displayName})
+
+                    data.assignments = productionAssignment.assignments
+                    // data.video = video
+                }
+
+                await rpoAccounts.put(data)
+
+                // add video list
+                if(productionAssignment && productionAssignment.assignments)
+                for (let ls=0; ls < productionAssignment.assignments.length; ls++) {
+                    // save in video list
+                    let assignedData = productionAssignment.assignments[ls]
+                    let lessonId = assignedData.jobType.split("/")[1]
+
+                    let videoList = await rpoVideoList.findQuery({lesson:lessonId})
+
+                    let videoData = {
+                        lesson: lessonId,
+                        youtubeID: videoList ? videoList[0].youtubeID : null,
+                        assigned: true,
+                        assignedData: data._id,
+                        lastCrawled: moment().format()
+                    }
+
+                    rpoVideos.put(videoData)
+
+                    // ls = productionAssignment.assignments.length
+                }
+
+                
             }
             
 

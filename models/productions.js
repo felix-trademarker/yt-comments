@@ -1,4 +1,4 @@
-let _table = process.env.TBLEXT + "videos";
+let _table = process.env.TBLEXT + "production";
 var Model = require('./_model')
 var defaultModel = new Model(_table)
 
@@ -29,16 +29,15 @@ module.exports = {
     // ADD CUSTOM FUNCTION BELOW ========================
     // ==================================================
 
-    fetchOneCron : async function() {
+    fetchOneAssign : async function() {
 		return new Promise(function(resolve, reject) {
 
-			let query = {assigned:true};
+			let query = {assigned: {$exists:false} }
 			
             conn.getDb()
                 .collection(_table)
                 .find(query)
                 .limit(1)
-				.sort( { "lastCrawled": 1 } )
                 .toArray(function(err, result) {
 					
                     if (err) {

@@ -1,4 +1,4 @@
-let _table = process.env.TBLEXT + "_accounts";
+let _table = process.env.TBLEXT + "accounts";
 var Model = require('./_model')
 var defaultModel = new Model(_table)
 

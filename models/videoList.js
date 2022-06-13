@@ -1,4 +1,4 @@
-let _table = process.env.TBLEXT + "videos";
+let _table = process.env.TBLEXT + "videoList";
 var Model = require('./_model')
 var defaultModel = new Model(_table)
 
