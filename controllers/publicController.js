@@ -8,6 +8,7 @@ let rpoAccounts = require('../models/accounts')
 let rpoVideos = require('../models/videos')
 let rpoVideoList = require('../models/videoList')
 let rpoProductions = require('../models/productions')
+let rpoAssignments = require('../models/assignments')
 let moment = require('moment')
 
 var SCOPES = ['https://www.googleapis.com/auth/youtube',
@@ -108,6 +109,7 @@ exports.index = async function(req, res, next) {
                     }
 
                     rpoVideos.put(videoData)
+                    rpoAssignments.put(productionAssignment.assignments[ls])
 
                     // ls = productionAssignment.assignments.length
                 }
