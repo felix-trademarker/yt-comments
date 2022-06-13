@@ -48,33 +48,49 @@ exports.addCommentToVideos = async function(req, res, next) {
         // find match FAQ in Assignment
         let findAssignments = await rpoAssignments.findQuery({jobType:"FAQ/"+videos[i].lesson})
         let findAssignment = findAssignments ? findAssignments[0] : null
-// console.log(findAssignment);
+console.log(findAssignment);
         if(findAssignment) {
           for(let f=0; f < findAssignment.items.length; f++) {
             if(commentSnippet.textOriginal.includes(findAssignment.items[f].question)){
               commentAnswer = findAssignment.items[f].answer
               console.log("found match");
+
+              // direct add comment
+              let contentReply = {
+                ytId: findComment.snippet.videoId,
+                ytParentId: findComment.id,
+                ytComment: commentAnswer
+              }
+              if(process.env.ENVIRONMENT !== 'dev'){
+                console.log("adding comment", contentReply )
+                f=findAssignment.items.length
+                this.insertReplyComment(oauth2Client, contentReply)
+
+              } else {
+                console.log("disable commenting on development environment");
+              }
+
             }
           }
 
           console.log("this", commentAnswer);
           // found answer, reply to comment
-          if(commentAnswer) {
-            let contentReply = {
-              ytId: findComment.snippet.videoId,
-              ytParentId: findComment.id,
-              ytComment: commentAnswer
-            }
-            if(process.env.ENVIRONMENT !== 'dev'){
-              console.log("adding comment", contentReply )
-              this.insertReplyComment(oauth2Client, contentReply)
-            } else {
-              console.log("disable commenting on development environment");
-            }
+          // if(commentAnswer) {
+          //   let contentReply = {
+          //     ytId: findComment.snippet.videoId,
+          //     ytParentId: findComment.id,
+          //     ytComment: commentAnswer
+          //   }
+          //   if(process.env.ENVIRONMENT !== 'dev'){
+          //     console.log("adding comment", contentReply )
+          //     this.insertReplyComment(oauth2Client, contentReply)
+          //   } else {
+          //     console.log("disable commenting on development environment");
+          //   }
             
-          } else {
-            console.log("No found proper answer");
-          }
+          // } else {
+          //   console.log("No found proper answer");
+          // }
         } else {
           console.log("Assignment Items empty");
         }
