@@ -45,6 +45,7 @@ exports.addCommentToVideos = async function(req, res, next) {
         let commentSnippet = findComment.snippet.topLevelComment.snippet;
         let commentAnswer = "";
 
+        console.log("=== fetching youtube ID", videos[i].youtubeID);
         // find match FAQ in Assignment
         let findAssignments = await rpoAssignments.findQuery({jobType:"FAQ/"+videos[i].lesson})
         let findAssignment = findAssignments ? findAssignments[0] : null
