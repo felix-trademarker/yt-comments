@@ -54,7 +54,7 @@ conn.connectToServer( function( err, client ) { // MAIN MONGO START
     // testService.addCommentToVideos()
   
   // testService.extrackAssignments()
-  cron.schedule('0 */3 * * * *', () => {
+  cron.schedule('0 */1 * * * *', () => {
     console.log("==== CRON RUNNING ON PORT 3000 ====");
     testService.addCommentToVideos()
     // testService.test()

@@ -31,14 +31,14 @@ exports.addCommentToVideos = async function(req, res, next) {
           ytId: videos[i].youtubeID,
           ytComment: "Thanks!",
       }
-      console.log("get comments");
+
       // check video for comment that doesn't have any reply
       let comments = await this.getComments(oauth2Client,commentData)
       // find unreplied comment and check in list
 
-      let findComment = await comments.find(c => c.snippet.totalReplyCount < 1);
-      // let userComment = 
-      console.log(findComment);
+      let findComment = await comments.find(c => c.snippet.totalReplyCount > 0);
+
+
       if(findComment){
         // found
         console.log("found unreplied comment");
@@ -49,7 +49,7 @@ exports.addCommentToVideos = async function(req, res, next) {
         // find match FAQ in Assignment
         let findAssignments = await rpoAssignments.findQuery({jobType:"FAQ/"+videos[i].lesson})
         let findAssignment = findAssignments ? findAssignments[0] : null
-console.log(findAssignment);
+
         if(findAssignment) {
           for(let f=0; f < findAssignment.items.length; f++) {
             if(commentSnippet.textOriginal.includes(findAssignment.items[f].question)){
@@ -74,24 +74,6 @@ console.log(findAssignment);
             }
           }
 
-          console.log("this", commentAnswer);
-          // found answer, reply to comment
-          // if(commentAnswer) {
-          //   let contentReply = {
-          //     ytId: findComment.snippet.videoId,
-          //     ytParentId: findComment.id,
-          //     ytComment: commentAnswer
-          //   }
-          //   if(process.env.ENVIRONMENT !== 'dev'){
-          //     console.log("adding comment", contentReply )
-          //     this.insertReplyComment(oauth2Client, contentReply)
-          //   } else {
-          //     console.log("disable commenting on development environment");
-          //   }
-            
-          // } else {
-          //   console.log("No found proper answer");
-          // }
         } else {
           console.log("Assignment Items empty");
         }
@@ -99,15 +81,6 @@ console.log(findAssignment);
       } else {
         console.log("All comments already has replies");
       }
-
-      // let findAssignments = await rpoAssignments.findQuery({jobType:"FAQ/"+videos[i].lesson})
-      //   console.log("found assignments",findAssignments[0].items);
-
-
-      // console.log("find", findComment);
-      // console.log("returned comments",comments);
-
-      // update video with lastCrawled
 
       rpoVideos.update(videos[i]._id, {lastCrawled: moment().format()})
     }
