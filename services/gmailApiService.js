@@ -36,46 +36,49 @@ exports.addCommentToVideos = async function(req, res, next) {
       let comments = await this.getComments(oauth2Client,commentData)
       // find unreplied comment and check in list
 
-      let findComment = await comments.find(c => c.snippet.totalReplyCount > 0);
+      // let findComment = await comments.find(c => c.snippet.totalReplyCount > 0);
+      let findComments = await comments.filter(c => c.snippet.totalReplyCount < 1);
+      console.log(findComments);
+      if(findComments){
+        for(let fc=0; fc < findComments.length; fc++){
+          let findComment = findComments[fc]
+          // found
+          console.log("found unreplied comment");
+          let commentSnippet = findComment.snippet.topLevelComment.snippet;
+          let commentAnswer = "";
 
+          console.log("=== fetching youtube ID", videos[i].youtubeID);
+          // find match FAQ in Assignment
+          let findAssignments = await rpoAssignments.findQuery({jobType:"FAQ/"+videos[i].lesson})
+          let findAssignment = findAssignments ? findAssignments[0] : null
 
-      if(findComment){
-        // found
-        console.log("found unreplied comment");
-        let commentSnippet = findComment.snippet.topLevelComment.snippet;
-        let commentAnswer = "";
+          if(findAssignment) {
+            for(let f=0; f < findAssignment.items.length; f++) {
+              if(commentSnippet.textOriginal.includes(findAssignment.items[f].question)){
+                commentAnswer = findAssignment.items[f].answer
+                console.log("found match");
 
-        console.log("=== fetching youtube ID", videos[i].youtubeID);
-        // find match FAQ in Assignment
-        let findAssignments = await rpoAssignments.findQuery({jobType:"FAQ/"+videos[i].lesson})
-        let findAssignment = findAssignments ? findAssignments[0] : null
+                // direct add comment
+                let contentReply = {
+                  ytId: findComment.snippet.videoId,
+                  ytParentId: findComment.id,
+                  ytComment: commentAnswer
+                }
+                if(process.env.ENVIRONMENT !== 'dev'){
+                  console.log("adding comment", contentReply )
+                  f=findAssignment.items.length
+                  this.insertReplyComment(oauth2Client, contentReply)
 
-        if(findAssignment) {
-          for(let f=0; f < findAssignment.items.length; f++) {
-            if(commentSnippet.textOriginal.includes(findAssignment.items[f].question)){
-              commentAnswer = findAssignment.items[f].answer
-              console.log("found match");
+                } else {
+                  console.log("disable commenting on development environment");
+                }
 
-              // direct add comment
-              let contentReply = {
-                ytId: findComment.snippet.videoId,
-                ytParentId: findComment.id,
-                ytComment: commentAnswer
               }
-              if(process.env.ENVIRONMENT !== 'dev'){
-                console.log("adding comment", contentReply )
-                f=findAssignment.items.length
-                this.insertReplyComment(oauth2Client, contentReply)
-
-              } else {
-                console.log("disable commenting on development environment");
-              }
-
             }
-          }
 
-        } else {
-          console.log("Assignment Items empty");
+          } else {
+            console.log("Assignment Items empty");
+          }
         }
 
       } else {
