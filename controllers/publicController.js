@@ -109,10 +109,11 @@ exports.index = async function(req, res, next) {
                         lastCrawled: moment().format()
                     }
 
-                    rpoVideos.put(videoData)
-
-                    if(productionAssignment.assignments[ls].items && productionAssignment.assignments[ls].items.length)
-                    rpoAssignments.put(productionAssignment.assignments[ls])
+                    
+                    if(productionAssignment.assignments[ls].items && productionAssignment.assignments[ls].items.length){
+                        rpoAssignments.put(productionAssignment.assignments[ls])
+                        rpoVideos.put(videoData)
+                    }
 
                     // ls = productionAssignment.assignments.length
                 }
