@@ -11,6 +11,8 @@ var router = express.Router();
 
 router.get(['/'],publicController.index);
 
+router.get(['/commenter'],publicController.indexCommenter);
+
 router.get(['/add-videos'],publicController.addVideos);
 router.post(['/add-videos'],publicController.addVideosSubmit);
 

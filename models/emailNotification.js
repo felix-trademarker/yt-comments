@@ -1,4 +1,4 @@
-let _table = process.env.TBLEXT + "accounts";
+let _table = process.env.TBLEXT + "emailNotification";
 var Model = require('./_model')
 var defaultModel = new Model(_table)
 
@@ -29,27 +29,6 @@ module.exports = {
     // ADD CUSTOM FUNCTION BELOW ========================
     // ==================================================
 
-    getPuppet : async function() {
-		return new Promise(function(resolve, reject) {
 
-			let query = {role: "commenter" }
-			
-            conn.getDb()
-                .collection(_table)
-                .find(query)
-                .limit(1)
-                .sort( { "lastCrawled": 1 } )
-                .toArray(function(err, result) {
-					
-                    if (err) {
-                        reject(err);
-                    } else {
-                        resolve(result);
-                    }
-
-			});
-
-		});
-    },
-
+    
 }

@@ -25,18 +25,6 @@ var OAuth2 = google.auth.OAuth2;
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// If modifying these scopes, delete your previously saved credentials
-// at ~/.credentials/youtube-nodejs-quickstart.json
-var SCOPES = ['https://www.googleapis.com/auth/youtube',
-              'https://www.googleapis.com/auth/youtube.upload',
-              'https://www.googleapis.com/auth/youtubepartner',
-              'https://www.googleapis.com/auth/youtube.force-ssl',
-            ];
-var TOKEN_DIR = (process.env.HOME || process.env.HOMEPATH ||
-    process.env.USERPROFILE) + '/.credentials/';
-var TOKEN_PATH = TOKEN_DIR + 'yt-nodejs-test2.json';
-
-let gCode = ''
 
 let conn = require('./config/DbConnect');
 conn.connectToServer( function( err, client ) { // MAIN MONGO START
@@ -51,14 +39,30 @@ conn.connectToServer( function( err, client ) { // MAIN MONGO START
   app.use('/', publicRouter);
 
   // test for CRON
-    // testService.addCommentToVideos()
+    // testService.addReplyCommentToVideos()
   
-  // testService.extrackAssignments()
-  cron.schedule('0 */1 * * * *', () => {
+  // sockpuppet | master puppet
+  cron.schedule('0 */6 * * * *', () => {
     console.log("==== CRON RUNNING ON PORT 3000 ====");
-    testService.addCommentToVideos()
+    // testService.addReplyCommentToVideos()
     // testService.test()
   });
+  cron.schedule('0 */20 9-16 * * mon-fri', () => { 
+    console.log("==== CRON RUNS EVERY 20MIN FOR PUPPET MASTERS FROM 9AM-4PM TIMEZONE: America/New_York ====");
+    // testService.addReplyCommentToVideos()
+  }, {
+    scheduled: true,
+    timezone: "America/New_York"
+  });
+
+  // puppet 
+  cron.schedule('0 */20 * * * wed-sun', () => {
+    console.log("==== CRON RUNS EVERY 15MIN FOR PUPPETS ====");
+    // testService.addCommentToVideos()
+    // testService.test()
+  });
+
+  // testService.addCommentToVideos()
 
 })
 

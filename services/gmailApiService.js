@@ -1,6 +1,10 @@
+const nodemailer = require("nodemailer");
+
 let rpoAccounts = require('../models/accounts');
 let rpoVideos = require('../models/videos');
 let rpoAssignments = require('../models/assignments');
+let rpoEmailNotifications = require('../models/emailNotification');
+let rpoPostedFaq = require('../models/postedFaq');
 
 var {google} = require('googleapis');
 var OAuth2 = google.auth.OAuth2;
@@ -8,12 +12,132 @@ let helpers = require('../helpers')
 
 let moment = require('moment')
 
+let transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.MAIL_USERNAME, 
+    pass: process.env.MAIL_PASSWORD
+  }
+});
+
+exports.addReplyCommentToVideos = async function(req, res, next) {
+
+  let videos = await rpoVideos.fetchOneCron()
+  let credentials = await helpers.getClientSecret()
+
+  var clientSecret = credentials.web.client_secret;
+  var clientId = credentials.web.client_id;
+  var redirectUrl = credentials.web.redirect_uris[0];
+  var oauth2Client = new OAuth2(clientId, clientSecret, redirectUrl);
+
+  // console.log(videos);
+  for(let i=0; i < videos.length; i++) {
+      
+    // fetch account
+    let accounts = await rpoAccounts.find(videos[i].assignedData)
+    oauth2Client.credentials = accounts[0];
+    let commentData = {
+        ytId: videos[i].youtubeID,
+        ytComment: "",
+    }
+
+    // check video for comment that doesn't have any reply
+    let comments = await this.getComments(oauth2Client,commentData)
+    // find unreplied comment and check in list
+
+    // let findComment = await comments.find(c => c.snippet.totalReplyCount > 0);
+    let findComments = await comments.filter(c => c.snippet.totalReplyCount < 1);
+
+    if(findComments){
+      for(let fc=0; fc < findComments.length; fc++){
+        let findComment = findComments[fc]
+        console.log(findComment);
+        // found
+        console.log("found unreplied comment");
+        let commentSnippet = findComment.snippet.topLevelComment.snippet;
+        let commentAnswer = "";
+
+        console.log("=== fetching youtube ID", videos[i].youtubeID);
+        // find match FAQ in Assignment
+        let findAssignments = await rpoAssignments.findQuery({jobType:"FAQ/"+videos[i].lesson})
+        let findAssignment = findAssignments ? findAssignments[0] : null
+
+        if(findAssignment) {
+          for(let f=0; f < findAssignment.items.length; f++) {
+            if(commentSnippet.textOriginal.includes(findAssignment.items[f].question)){
+              commentAnswer = findAssignment.items[f].answer
+              console.log("found match");
+
+              // direct add comment
+              let contentReply = {
+                ytId: findComment.snippet.videoId,
+                ytParentId: findComment.id,
+                ytComment: commentAnswer
+              }
+              if(process.env.ENVIRONMENT !== 'dev'){
+                console.log("adding comment", contentReply )
+                f=findAssignment.items.length
+                this.insertReplyComment(oauth2Client, contentReply)
+
+              } else {
+                console.log("disable commenting on development environment");
+              }
+
+            }
+          }
+
+          if (!commentAnswer) {
+            // send email notification
+            // console.log("send email notification regarding", videos[i].youtubeID, commentSnippet.textOriginal);
+            let dataNotify = {
+              commentSnippet : commentSnippet,
+              youtubeID: videos[i].youtubeID
+            }
+
+            let findNotifyData = {
+              youtubeID:videos[i].youtubeID,
+              commentId:findComment.id
+            }
+            let findNotification = await rpoEmailNotifications.findQuery(findNotifyData)
+            
+            // console.log(findNotification);
+            if(findNotification && findNotification.length == 0) {
+              
+              findNotifyData.commentSnippet = commentSnippet
+              rpoEmailNotifications.put(findNotifyData)
+              console.log("Notification Sent");
+              
+              if(process.env.ENVIRONMENT !== 'dev'){
+                this.ytNotification(dataNotify)
+              }
+
+              
+            }
+            // this.ytNotification(dataNotify)
+          }
+
+        } else {
+          console.log("Assignment Items empty");
+        }
+      }
+
+    } else {
+      console.log("All comments already has replies");
+    }
+
+    rpoVideos.update(videos[i]._id, {lastCrawled: moment().format()})
+  }
+ 
+}
+
+// SERVICE FOR COMMENTERS
 exports.addCommentToVideos = async function(req, res, next) {
 
+  let videos = await rpoVideos.fetchOneCron()
+  let video = videos && videos.length > 0 ? videos[0] : null
 
-    let videos = await rpoVideos.fetchOneCron()
-
-    // console.log(videos);
+  // check if it has data fetch
+  if (video) {
     let credentials = await helpers.getClientSecret()
 
     var clientSecret = credentials.web.client_secret;
@@ -21,72 +145,59 @@ exports.addCommentToVideos = async function(req, res, next) {
     var redirectUrl = credentials.web.redirect_uris[0];
     var oauth2Client = new OAuth2(clientId, clientSecret, redirectUrl);
 
-    // console.log(videos);
-    for(let i=0; i < videos.length; i++) {
+    let accounts = await rpoAccounts.getPuppet()
+    oauth2Client.credentials = accounts[0];
+
+    // fetch assignment collection to get faq items
+    let assignments = await rpoAssignments.fetchLinkedVideo(video.lesson)
+
+    if (assignments && assignments.length > 0) {
+      let assignment = assignments[0]
+      let postedFaqs = await rpoPostedFaq.findQuery({assignmentId: assignment._id})
+      let faqs = assignment.items
+
+      let postIdx = postedFaqs.length
+
+      if (postIdx < faqs.length) {
+        // add comment faqs with position index
+        let comment = faqs[postIdx]
+        let commentData = {
+          ytId: video.youtubeID,
+          ytComment: comment.question
+        }
+        console.log(commentData);
         
-      // fetch account
-      let accounts = await rpoAccounts.find(videos[i].assignedData)
-      oauth2Client.credentials = accounts[0];
-      let commentData = {
-          ytId: videos[i].youtubeID,
-          ytComment: "Thanks!",
-      }
+        let commentResponse = await this.insertComment(oauth2Client,commentData)
 
-      // check video for comment that doesn't have any reply
-      let comments = await this.getComments(oauth2Client,commentData)
-      // find unreplied comment and check in list
+        if(process.env.ENVIRONMENT !== 'dev')
+        if (commentResponse && commentResponse.status == 200) {
+          // success posting faq
+          // save to repo and update lastcrawl to each data
+          commentData.assignmentId = assignment._id
+          commentData.puppet = accounts[0]
+          commentData.dateCreated = moment().format()
+          rpoPostedFaq.put(commentData)
 
-      // let findComment = await comments.find(c => c.snippet.totalReplyCount > 0);
-      let findComments = await comments.filter(c => c.snippet.totalReplyCount < 1);
-      console.log(findComments);
-      if(findComments){
-        for(let fc=0; fc < findComments.length; fc++){
-          let findComment = findComments[fc]
-          // found
-          console.log("found unreplied comment");
-          let commentSnippet = findComment.snippet.topLevelComment.snippet;
-          let commentAnswer = "";
+          rpoAccounts.update(accounts[0]._id, {lastCrawled: moment().format()})
 
-          console.log("=== fetching youtube ID", videos[i].youtubeID);
-          // find match FAQ in Assignment
-          let findAssignments = await rpoAssignments.findQuery({jobType:"FAQ/"+videos[i].lesson})
-          let findAssignment = findAssignments ? findAssignments[0] : null
-
-          if(findAssignment) {
-            for(let f=0; f < findAssignment.items.length; f++) {
-              if(commentSnippet.textOriginal.includes(findAssignment.items[f].question)){
-                commentAnswer = findAssignment.items[f].answer
-                console.log("found match");
-
-                // direct add comment
-                let contentReply = {
-                  ytId: findComment.snippet.videoId,
-                  ytParentId: findComment.id,
-                  ytComment: commentAnswer
-                }
-                if(process.env.ENVIRONMENT !== 'dev'){
-                  console.log("adding comment", contentReply )
-                  f=findAssignment.items.length
-                  this.insertReplyComment(oauth2Client, contentReply)
-
-                } else {
-                  console.log("disable commenting on development environment");
-                }
-
-              }
-            }
-
-          } else {
-            console.log("Assignment Items empty");
-          }
+          rpoVideos.update(video._id, {lastCrawled: moment().format()})
         }
 
-      } else {
-        console.log("All comments already has replies");
       }
 
-      rpoVideos.update(videos[i]._id, {lastCrawled: moment().format()})
+
+      // console.log();
     }
+
+
+  } // close if has data fetch
+
+  
+
+  
+
+  // rpoVideos.update(videos[i]._id, {lastCrawled: moment().format()})
+  
  
 }
 
@@ -103,6 +214,8 @@ exports.addCommentToVideos = async function(req, res, next) {
 // }
 
 exports.insertComment = async function(auth, content) {
+
+  return new Promise(function(resolve, reject) {
 
     var service = google.youtube('v3');
   
@@ -121,11 +234,11 @@ exports.insertComment = async function(auth, content) {
       },
     }, function(err, response) {
       if (err) {
-        console.log('The API returned an error: ' + err);
-        return;
+        reject(err)
       }
-      console.log(response);
+      resolve(response)
     });
+  });
   
 }
 
@@ -199,3 +312,21 @@ exports.getGmailProfile = async function(auth) {
 }
 
 
+// SEND EMAIL NOTIFICATION
+exports.ytNotification = async function(data) {
+
+  return await transporter.sendMail({
+  sender: process.env.MAIL_FROM,
+  replyTo: process.env.MAIL_FROM,
+  from: process.env.MAIL_FROM, 
+  to: "felix@bigfoot.com",
+  subject: "Unreplied YOUTUBE Comment - "+moment(data.commentSnippet.publishedAt).format('MMMM Do YYYY, h:mm:ss a'), 
+  html: `<p>Hi Admin,</p>
+          <p>Youtube ID: ${data.youtubeID}
+          <br>Comment: ${data.commentSnippet.textOriginal}
+          </p>
+          <p></p>
+      `, 
+  });
+  
+}
