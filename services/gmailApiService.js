@@ -51,7 +51,7 @@ exports.addReplyCommentToVideos = async function(req, res, next) {
     if(findComments){
       for(let fc=0; fc < findComments.length; fc++){
         let findComment = findComments[fc]
-        console.log(findComment);
+        // console.log(findComment);
         // found
         console.log("found unreplied comment");
         let commentSnippet = findComment.snippet.topLevelComment.snippet;
@@ -74,7 +74,7 @@ exports.addReplyCommentToVideos = async function(req, res, next) {
                 ytParentId: findComment.id,
                 ytComment: commentAnswer
               }
-              if(process.env.ENVIRONMENT !== 'dev'){
+              if(true || process.env.ENVIRONMENT !== 'dev'){
                 console.log("adding comment", contentReply )
                 f=findAssignment.items.length
                 this.insertReplyComment(oauth2Client, contentReply)
@@ -178,13 +178,16 @@ exports.addCommentToVideos = async function(req, res, next) {
         
         let commentResponse = await this.insertComment(oauth2Client,commentData)
 
-        if(process.env.ENVIRONMENT !== 'dev')
+        if(true || process.env.ENVIRONMENT !== 'dev')
         if (commentResponse && commentResponse.status == 200) {
           // success posting faq
           // save to repo and update lastcrawl to each data
           commentData.assignmentId = assignment._id
           commentData.puppet = accounts[0]
           commentData.dateCreated = moment().format()
+
+          // add record 
+          console.log("record faq posted", commentData);
           rpoPostedFaq.put(commentData)
 
           rpoAccounts.update(accounts[0]._id, {lastCrawled: moment().format()})
