@@ -29,6 +29,29 @@ module.exports = {
     // ADD CUSTOM FUNCTION BELOW ========================
     // ==================================================
 
+    fetchOneCron : async function() {
+		return new Promise(function(resolve, reject) {
+
+			let query = {assigned:true};
+			
+            conn.getDb()
+                .collection(_table)
+                .find(query)
+                .limit(1)
+				.sort( { "lastCrawled": 1 } )
+                .toArray(function(err, result) {
+					
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve(result);
+                    }
+
+			});
+
+		});
+    },
+    
     fetchLinkedVideo : async function(lessonNo) {
 		return new Promise(function(resolve, reject) {
 

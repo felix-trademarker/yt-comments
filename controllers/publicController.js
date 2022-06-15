@@ -111,7 +111,15 @@ exports.index = async function(req, res, next) {
 
                     
                     if(productionAssignment.assignments[ls].items && productionAssignment.assignments[ls].items.length){
-                        rpoAssignments.put(productionAssignment.assignments[ls])
+                        let assignment = productionAssignment.assignments[ls]
+
+                        assignment.lesson = lessonId,
+                        assignment.youtubeID = videoList ? videoList[0].youtubeID : null,
+                        assignment.assigned = true,
+                        assignment.assignedData = data._id,
+                        assignment.lastCrawled = moment().format()
+                        
+                        rpoAssignments.put(assignment)
                         rpoVideos.put(videoData)
                     }
 
