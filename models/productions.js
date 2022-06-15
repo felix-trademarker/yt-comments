@@ -32,7 +32,7 @@ module.exports = {
     fetchOneAssign : async function() {
 		return new Promise(function(resolve, reject) {
 
-			let query = {assigned: {$exists:false} }
+			let query = {assignedGmailAccount: {$exists:false} }
 			
             conn.getDb()
                 .collection(_table)
