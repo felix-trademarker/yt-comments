@@ -146,6 +146,15 @@ exports.addCommentToVideos = async function(req, res, next) {
     var oauth2Client = new OAuth2(clientId, clientSecret, redirectUrl);
 
     let accounts = await rpoAccounts.getPuppet()
+
+    // console.log(accounts);
+    // return;
+
+    if(accounts && accounts.length < 1){
+      console.log('NO AVAILABLE PUPPET FOR POSTING COMMENTS. PUPPET MUST ONLY POST 1 COMMENT PER DAY');
+      return;
+    }
+
     oauth2Client.credentials = accounts[0];
 
     // fetch assignment collection to get faq items

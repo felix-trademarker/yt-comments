@@ -42,14 +42,14 @@ conn.connectToServer( function( err, client ) { // MAIN MONGO START
     // testService.addReplyCommentToVideos()
   
   // sockpuppet | master puppet
-  cron.schedule('0 */6 * * * *', () => {
-    console.log("==== CRON RUNNING ON PORT 3000 ====");
-    // testService.addReplyCommentToVideos()
-    // testService.test()
-  });
+  // cron.schedule('0 */6 * * * *', () => {
+  //   console.log("==== CRON RUNNING ON PORT 3000 ====");
+  //   testService.addReplyCommentToVideos()
+  //   // testService.test()
+  // });
   cron.schedule('0 */20 9-16 * * mon-fri', () => { 
     console.log("==== CRON RUNS EVERY 20MIN FOR PUPPET MASTERS FROM 9AM-4PM TIMEZONE: America/New_York ====");
-    // testService.addReplyCommentToVideos()
+    testService.addReplyCommentToVideos()
   }, {
     scheduled: true,
     timezone: "America/New_York"
@@ -57,12 +57,12 @@ conn.connectToServer( function( err, client ) { // MAIN MONGO START
 
   // puppet 
   cron.schedule('0 */20 * * * wed-sun', () => {
-    console.log("==== CRON RUNS EVERY 15MIN FOR PUPPETS ====");
-    // testService.addCommentToVideos()
+    console.log("==== CRON RUNS EVERY 20MIN FOR PUPPETS ====");
+    testService.addCommentToVideos()
     // testService.test()
   });
 
-  // testService.addCommentToVideos()
+  testService.addCommentToVideos()
 
 })
 
