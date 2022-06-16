@@ -166,10 +166,9 @@ exports.addCommentToVideos = async function(req, res, next) {
 
     console.log(accounts);
 
+    let lastPosted = await rpoPostedFaq.fetchLatest()
     let puppetPostedToday = await rpoPostedFaq.findQuery({ "puppet.emailAddress": accounts[0].emailAddress, dateCreated: { $gte: moment().format("YYYY-MM-DD") } })
-    console.log(puppetPostedToday.length);
     
-
     if(accounts && accounts.length < 1){
       console.log('NO AVAILABLE PUPPET FOR POSTING COMMENTS. PUPPET MUST ONLY POST 3 COMMENT PER DAY');
       return;
@@ -179,8 +178,11 @@ exports.addCommentToVideos = async function(req, res, next) {
       console.log('NO AVAILABLE PUPPET FOR POSTING COMMENTS. PUPPET MUST ONLY POST 3 COMMENT PER DAY');
       return;
     }
-    // console.log("continue posting");
-    // return;
+
+    if (lastPosted && lastPosted.length > 0 && moment().diff(moment(lastPosted[0].dateCreated),"minutes") < 15) {
+      console.log("CANCELLED: TO EARLY TO ADD NEW POST")
+      return;
+    }
 
     oauth2Client.credentials = accounts[0];
 

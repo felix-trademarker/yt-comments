@@ -73,4 +73,25 @@ module.exports = {
 
 		});
     },
+
+    fetchLatest : async function() {
+		return new Promise(function(resolve, reject) {
+			
+            conn.getDb()
+                .collection(_table)
+                .find()
+                .limit(1)
+				.sort( { "lastCrawled": 1 } )
+                .toArray(function(err, result) {
+					
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve(result);
+                    }
+
+			});
+
+		});
+    },
 }
