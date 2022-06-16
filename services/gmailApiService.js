@@ -195,7 +195,7 @@ exports.addCommentToVideos = async function(req, res, next) {
     }
 
     if (lastPosted && lastPosted.length > 0 && moment().diff(moment(lastPosted[0].dateCreated),"minutes") < 15) {
-      console.log("CANCELLED: TO EARLY TO ADD NEW POST")
+      console.log("CANCELLED: TOO EARLY TO ADD NEW POST")
       return;
     }
 
