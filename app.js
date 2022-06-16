@@ -51,7 +51,7 @@ conn.connectToServer( function( err, client ) { // MAIN MONGO START
     // console.log("puppetMaster")
     cron.schedule('0 */10 9-16 * * mon-fri', () => { 
       console.log("==== CRON RUNS EVERY 20MIN FOR PUPPET MASTERS FROM 9AM-4PM TIMEZONE: America/New_York ====");
-      // testService.addReplyCommentToVideos()
+      testService.addReplyCommentToVideos()
     }, {
       scheduled: true,
       timezone: "America/New_York"
@@ -64,7 +64,7 @@ conn.connectToServer( function( err, client ) { // MAIN MONGO START
     // console.log("sockPuppet")
     cron.schedule('0 */15 10-15 * * *', () => {
       console.log("==== CRON RUNS EVERY 20MIN FOR PUPPETS ====");
-      // testService.addCommentToVideos()
+      testService.addCommentToVideos()
       // testService.test()
     });
   }

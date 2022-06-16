@@ -77,14 +77,13 @@ exports.addReplyCommentToVideos = async function(req, res, next) {
               }
 
               if (moment().diff(moment(commentSnippet.publishedAt),"minutes") < 20) {
-                console.log("To early to reply")
+                console.log("Too early to reply")
                 return;
               }
 
               if(true | process.env.ENVIRONMENT !== 'dev'){
                 console.log("adding comment", contentReply )
-                f=findAssignment.items.length
-                fc=findComments.length
+                
                 this.insertReplyComment(oauth2Client, contentReply)
 
                 // add updates here
@@ -96,7 +95,23 @@ exports.addReplyCommentToVideos = async function(req, res, next) {
                   contentReply.dateCreated = moment().format()
                   rpoPostedFaq.update(postedFaq[0]._id, { replied: contentReply })
 
+                  // UPDATE CP.PRODUCTION RECORD
+                  let mainProductions = await rpoMainProductions.findQuery({"assignments.ID":findAssignment.ID})
+
+                  if(mainProductions[0].assignments && mainProductions[0].assignments.length > 0){
+                    
+                    let assignmentNDX = mainProductions[0].assignments.findIndex((element) => element.ID == findAssignment.ID)
+                    let itemsNDX = mainProductions[0].assignments[assignmentNDX].items.findIndex((element) => element.question == findAssignment.items[f].question)
+                    let mainAssignments = mainProductions[0].assignments
+
+                    mainAssignments[assignmentNDX].items[itemsNDX].contentReply = contentReply
+                    rpoMainProductions.update(mainProductions[0]._id, {assignments: mainAssignments})
+                  }
+
                 }
+
+                f=findAssignment.items.length
+                fc=findComments.length
 
               } else {
                 console.log("disable commenting on development environment");
