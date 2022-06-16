@@ -386,7 +386,8 @@ exports.ytNotification = async function(data) {
   sender: process.env.MAIL_FROM,
   replyTo: process.env.MAIL_FROM,
   from: process.env.MAIL_FROM, 
-  to: "felix@bigfoot.com",
+  to: "carissa@chinesepod.com",
+  cc: "felix@bigfoot.com",
   subject: "Unreplied YOUTUBE Comment - "+moment(data.commentSnippet.publishedAt).format('MMMM Do YYYY, h:mm:ss a'), 
   html: `<p>Hi Admin,</p>
           <p>Youtube ID: ${data.youtubeID}
