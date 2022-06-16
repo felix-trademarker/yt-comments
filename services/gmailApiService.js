@@ -5,6 +5,7 @@ let rpoVideos = require('../models/videos');
 let rpoAssignments = require('../models/assignments');
 let rpoEmailNotifications = require('../models/emailNotification');
 let rpoPostedFaq = require('../models/postedFaq');
+let rpoMainProductions = require('../models/mainProductions');
 
 var {google} = require('googleapis');
 var OAuth2 = google.auth.OAuth2;
@@ -74,10 +75,28 @@ exports.addReplyCommentToVideos = async function(req, res, next) {
                 ytParentId: findComment.id,
                 ytComment: commentAnswer
               }
-              if(true || process.env.ENVIRONMENT !== 'dev'){
+
+              if (moment().diff(moment(commentSnippet.publishedAt),"minutes") < 20) {
+                console.log("To early to reply")
+                return;
+              }
+
+              if(true | process.env.ENVIRONMENT !== 'dev'){
                 console.log("adding comment", contentReply )
                 f=findAssignment.items.length
+                fc=findComments.length
                 this.insertReplyComment(oauth2Client, contentReply)
+
+                // add updates here
+                let postedFaq = await rpoPostedFaq.findQuery({ ytComment: commentSnippet.textOriginal })
+                
+                if(postedFaq && postedFaq.length > 0) {
+
+                  contentReply.puppetMaster = accounts[0]
+                  contentReply.dateCreated = moment().format()
+                  rpoPostedFaq.update(postedFaq[0]._id, { replied: contentReply })
+
+                }
 
               } else {
                 console.log("disable commenting on development environment");
@@ -105,13 +124,11 @@ exports.addReplyCommentToVideos = async function(req, res, next) {
               
               findNotifyData.commentSnippet = commentSnippet
               rpoEmailNotifications.put(findNotifyData)
-              console.log("Notification Sent");
               
               if(process.env.ENVIRONMENT !== 'dev'){
                 this.ytNotification(dataNotify)
               }
 
-              
             }
             // this.ytNotification(dataNotify)
           }
@@ -147,13 +164,23 @@ exports.addCommentToVideos = async function(req, res, next) {
 
     let accounts = await rpoAccounts.getPuppet()
 
-    // console.log(accounts);
-    // return;
+    console.log(accounts);
+
+    let puppetPostedToday = await rpoPostedFaq.findQuery({ "puppet.emailAddress": accounts[0].emailAddress, dateCreated: { $gte: moment().format("YYYY-MM-DD") } })
+    console.log(puppetPostedToday.length);
+    
 
     if(accounts && accounts.length < 1){
-      console.log('NO AVAILABLE PUPPET FOR POSTING COMMENTS. PUPPET MUST ONLY POST 1 COMMENT PER DAY');
+      console.log('NO AVAILABLE PUPPET FOR POSTING COMMENTS. PUPPET MUST ONLY POST 3 COMMENT PER DAY');
       return;
     }
+
+    if (puppetPostedToday && puppetPostedToday.length > 2) {
+      console.log('NO AVAILABLE PUPPET FOR POSTING COMMENTS. PUPPET MUST ONLY POST 3 COMMENT PER DAY');
+      return;
+    }
+    // console.log("continue posting");
+    // return;
 
     oauth2Client.credentials = accounts[0];
 
@@ -164,7 +191,6 @@ exports.addCommentToVideos = async function(req, res, next) {
       let assignment = assignments[0]
       let postedFaqs = await rpoPostedFaq.findQuery({assignmentId: assignment._id})
       let faqs = assignment.items
-
       let postIdx = postedFaqs.length
 
       if (postIdx < faqs.length) {
@@ -175,10 +201,11 @@ exports.addCommentToVideos = async function(req, res, next) {
           ytComment: comment.question
         }
         console.log(commentData);
+
         
         let commentResponse = await this.insertComment(oauth2Client,commentData)
 
-        if(true || process.env.ENVIRONMENT !== 'dev')
+        // if(process.env.ENVIRONMENT !== 'dev')
         if (commentResponse && commentResponse.status == 200) {
           // success posting faq
           // save to repo and update lastcrawl to each data
@@ -189,10 +216,22 @@ exports.addCommentToVideos = async function(req, res, next) {
           // add record 
           console.log("record faq posted", commentData);
           rpoPostedFaq.put(commentData)
-
           rpoAccounts.update(accounts[0]._id, {lastCrawled: moment().format()})
-
           rpoVideos.update(video._id, {lastCrawled: moment().format()})
+
+          // UPDATE CP.PRODUCTION RECORD
+          let mainProductions = await rpoMainProductions.findQuery({"assignments.ID":assignment.ID})
+
+          if(mainProductions[0].assignments && mainProductions[0].assignments.length > 0){
+            
+            let assignmentNDX = mainProductions[0].assignments.findIndex((element) => element.ID == assignment.ID)
+            let itemsNDX = mainProductions[0].assignments[assignmentNDX].items.findIndex((element) => element.question == comment.question)
+            let mainAssignments = mainProductions[0].assignments
+
+            mainAssignments[assignmentNDX].items[itemsNDX].commentData = commentData
+            rpoMainProductions.update(mainProductions[0]._id, {assignments: mainAssignments})
+          }
+
         }
 
       }
@@ -257,7 +296,6 @@ exports.insertComment = async function(auth, content) {
 exports.insertReplyComment = async function(auth, content) {
 
     var service = google.youtube('v3');
-  console.log("insert", content);
     service.comments.insert({
       auth: auth,
       part: ["snippet"],

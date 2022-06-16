@@ -1,10 +1,8 @@
-let _table = process.env.TBLEXT + "accounts";
+let _table = "cp.productions";
 var Model = require('./_model')
 var defaultModel = new Model(_table)
-var moment = require('moment')
 
 let conn = require('../config/DbConnect');
-const app = require('../app');
 
 module.exports = {
 
@@ -31,28 +29,6 @@ module.exports = {
     // ADD CUSTOM FUNCTION BELOW ========================
     // ==================================================
 
-    getPuppet : async function() {
-		return new Promise(function(resolve, reject) {
-
-            // console.log(moment().subtract("1", "day").format());
-			// let query = {role: "commenter", lastCrawled : {$lte : moment().subtract("1", "day").format() }  }
-			let query = {emailAddress: process.env.puppet}
-			
-            conn.getDb()
-                .collection(_table)
-                .find(query)
-                .limit(1)
-                .toArray(function(err, result) {
-					
-                    if (err) {
-                        reject(err);
-                    } else {
-                        resolve(result);
-                    }
-
-			});
-
-		});
-    },
-
+    
+    
 }

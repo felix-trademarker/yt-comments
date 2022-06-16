@@ -47,20 +47,27 @@ conn.connectToServer( function( err, client ) { // MAIN MONGO START
   //   testService.addReplyCommentToVideos()
   //   // testService.test()
   // });
-  // cron.schedule('0 */20 9-16 * * mon-fri', () => { 
-  //   console.log("==== CRON RUNS EVERY 20MIN FOR PUPPET MASTERS FROM 9AM-4PM TIMEZONE: America/New_York ====");
-  //   // testService.addReplyCommentToVideos()
-  // }, {
-  //   scheduled: true,
-  //   timezone: "America/New_York"
-  // });
+  if(process.env.cronServe == "puppetMaster") {
+    // console.log("puppetMaster")
+    cron.schedule('0 */10 9-16 * * mon-fri', () => { 
+      console.log("==== CRON RUNS EVERY 20MIN FOR PUPPET MASTERS FROM 9AM-4PM TIMEZONE: America/New_York ====");
+      // testService.addReplyCommentToVideos()
+    }, {
+      scheduled: true,
+      timezone: "America/New_York"
+    });
+  }
+ 
 
   // puppet 
-  // cron.schedule('0 */20 * * * wed-sun', () => {
-  //   console.log("==== CRON RUNS EVERY 20MIN FOR PUPPETS ====");
-  //   // testService.addCommentToVideos()
-  //   // testService.test()
-  // });
+  if(process.env.cronServe == "sockPuppet") {
+    // console.log("sockPuppet")
+    cron.schedule('0 */15 10-15 * * *', () => {
+      console.log("==== CRON RUNS EVERY 20MIN FOR PUPPETS ====");
+      // testService.addCommentToVideos()
+      // testService.test()
+    });
+  }
 
   // testService.addReplyCommentToVideos()
 
