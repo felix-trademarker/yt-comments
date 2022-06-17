@@ -62,8 +62,9 @@ exports.addReplyCommentToVideos = async function(req, res, next) {
         // find match FAQ in Assignment
         let findAssignments = await rpoAssignments.findQuery({jobType:"FAQ/"+videos[i].lesson})
         let findAssignment = findAssignments ? findAssignments[0] : null
-        console.log(findAssignment);
+        // console.log(findAssignment);
         if(findAssignment) {
+          console.log("this");
           for(let f=0; f < findAssignment.items.length; f++) {
             if(commentSnippet.textOriginal.includes(findAssignment.items[f].question)){
               commentAnswer = findAssignment.items[f].answer
@@ -117,6 +118,8 @@ exports.addReplyCommentToVideos = async function(req, res, next) {
                 console.log("disable commenting on development environment");
               }
 
+            } else {
+              console.log("not found");
             }
           }
 
