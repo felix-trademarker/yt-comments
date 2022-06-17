@@ -51,6 +51,29 @@ module.exports = {
 
 		});
     },
+
+    fetchOneCron2 : async function() {
+		return new Promise(function(resolve, reject) {
+
+			let query = {assigned:true};
+			
+            conn.getDb()
+                .collection(_table)
+                .find(query)
+                .limit(1)
+				.sort( { "lastCrawledReply": 1 } )
+                .toArray(function(err, result) {
+					
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve(result);
+                    }
+
+			});
+
+		});
+    },
     
     fetchOneAssign : async function() {
 		return new Promise(function(resolve, reject) {

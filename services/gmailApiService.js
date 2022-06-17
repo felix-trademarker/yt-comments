@@ -23,7 +23,7 @@ let transporter = nodemailer.createTransport({
 
 exports.addReplyCommentToVideos = async function(req, res, next) {
 
-  let videos = await rpoVideos.fetchOneCron()
+  let videos = await rpoVideos.fetchOneCron2()
   let credentials = await helpers.getClientSecret()
 
   var clientSecret = credentials.web.client_secret;
@@ -62,7 +62,7 @@ exports.addReplyCommentToVideos = async function(req, res, next) {
         // find match FAQ in Assignment
         let findAssignments = await rpoAssignments.findQuery({jobType:"FAQ/"+videos[i].lesson})
         let findAssignment = findAssignments ? findAssignments[0] : null
-
+        console.log(findAssignment);
         if(findAssignment) {
           for(let f=0; f < findAssignment.items.length; f++) {
             if(commentSnippet.textOriginal.includes(findAssignment.items[f].question)){
@@ -157,7 +157,7 @@ exports.addReplyCommentToVideos = async function(req, res, next) {
       console.log("All comments already has replies");
     }
 
-    rpoVideos.update(videos[i]._id, {lastCrawled: moment().format()})
+    rpoVideos.update(videos[i]._id, {lastCrawledReply: moment().format()})
   }
  
 }
