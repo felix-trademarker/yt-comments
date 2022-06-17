@@ -63,9 +63,10 @@ exports.addReplyCommentToVideos = async function(req, res, next) {
         let findAssignments = await rpoAssignments.findQuery({jobType:"FAQ/"+videos[i].lesson})
         let findAssignment = findAssignments ? findAssignments[0] : null
         // console.log(findAssignment);
-        if(findAssignment) {
-          console.log("this");
+        if(findAssignment) { 
+          console.log("this",commentSnippet.textOriginal);
           for(let f=0; f < findAssignment.items.length; f++) {
+            console.log("checking >> ", findAssignment.items[f].question);
             if(commentSnippet.textOriginal.includes(findAssignment.items[f].question)){
               commentAnswer = findAssignment.items[f].answer
               console.log("found match");
@@ -160,7 +161,7 @@ exports.addReplyCommentToVideos = async function(req, res, next) {
       console.log("All comments already has replies");
     }
 
-    rpoVideos.update(videos[i]._id, {lastCrawledReply: moment().format()})
+    rpoVideos.update(videos[i]._id, {lastCrawledReply3: moment().format()})
   }
  
 }

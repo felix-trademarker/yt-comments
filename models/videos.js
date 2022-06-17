@@ -61,7 +61,7 @@ module.exports = {
                 .collection(_table)
                 .find(query)
                 .limit(1)
-				.sort( { "lastCrawledReply": 1 } )
+				.sort( { "lastCrawledReply3": 1 } )
                 .toArray(function(err, result) {
 					
                     if (err) {
