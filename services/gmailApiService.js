@@ -209,7 +209,7 @@ exports.addCommentToVideos = async function(req, res, next) {
       return;
     }
 
-    if (lastPosted && lastPosted.length > 0 && moment().diff(moment(lastPosted[0].dateCreated),"minutes") < 20) {
+    if (lastPosted && lastPosted.length > 0 && moment().diff(moment(lastPosted[0].dateCreated),"minutes") < 13) {
       console.log("CANCELLED: TOO EARLY TO ADD NEW POST")
       return;
     }
