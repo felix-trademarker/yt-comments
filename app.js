@@ -63,7 +63,7 @@ conn.connectToServer( function( err, client ) { // MAIN MONGO START
   if(process.env.cronServe == "sockPuppet") {
     // console.log("sockPuppet")
     cron.schedule('0 13,15,17,19,21 10-15 * * *', () => {
-      console.log("==== CRON RUNS EVERY 20MIN FOR PUPPETS ====");
+      console.log("==== CRON RUNS EVERY 13MIN-21MIN RAND FOR PUPPETS ====");
       testService.addCommentToVideos()
       // testService.test()
     });

@@ -154,7 +154,7 @@ exports.addReplyCommentToVideos = async function(req, res, next) {
               
               findNotifyData.commentSnippet = commentSnippet
               rpoEmailNotifications.put(findNotifyData)
-              
+
               if(process.env.ENVIRONMENT !== 'dev' && moment().diff(moment(commentSnippet.publishedAt),"weeks") < 4){
                 this.ytNotification(dataNotify)
               }
@@ -417,7 +417,7 @@ exports.ytCommentNotification = async function(data) {
           <p>Commenter: ${data.commentData.puppet.displayName}
           <br>Youtube Link: https://www.youtube.com/watch?v=${data.commentData.ytId}
           <br>Comment: ${data.commentData.ytComment}
-          <br>Todays Post Count: ${data.totalNoComment}
+          <br>Todays Post Count: ${(data.totalNoComment + 1)}
           </p>
           <p></p>
       `, 
