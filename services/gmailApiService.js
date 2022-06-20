@@ -194,7 +194,7 @@ exports.addCommentToVideos = async function(req, res, next) {
 
     let accounts = await rpoAccounts.getPuppet()
 
-    console.log(accounts);
+    // console.log(accounts);
 
     let lastPosted = await rpoPostedFaq.fetchLatest()
     let puppetPostedToday = await rpoPostedFaq.findQuery({ "puppet.emailAddress": accounts[0].emailAddress, dateCreated: { $gte: moment().format("YYYY-MM-DD") } })
@@ -232,7 +232,7 @@ exports.addCommentToVideos = async function(req, res, next) {
           ytId: video.youtubeID,
           ytComment: comment.question
         }
-        console.log(commentData);
+        console.log("PREPARING COMMENT DATA >>> ",commentData);
 
         
         let commentResponse = await this.insertComment(oauth2Client,commentData)
@@ -244,9 +244,9 @@ exports.addCommentToVideos = async function(req, res, next) {
           commentData.assignmentId = assignment._id
           commentData.puppet = accounts[0]
           commentData.dateCreated = moment().format()
-
+          console.log("SUCCESS IN POSTING A COMMENT!!!");
           // add record 
-          console.log("record faq posted", commentData);
+          console.log("ADD FAQ POSTED >>> ", commentData);
           rpoPostedFaq.put(commentData)
           rpoAccounts.update(accounts[0]._id, {lastCrawled: moment().format()})
           rpoVideos.update(video._id, {lastCrawled: moment().format()})

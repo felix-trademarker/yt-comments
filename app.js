@@ -58,12 +58,13 @@ conn.connectToServer( function( err, client ) { // MAIN MONGO START
     });
   }
  
-
+  
   // puppet 
   if(process.env.cronServe == "sockPuppet") {
     // console.log("sockPuppet")
     cron.schedule('0 13,15,17,19,21 10-15 * * *', () => {
       console.log("==== CRON RUNS EVERY 13MIN-21MIN RAND FOR PUPPETS ====");
+      console.log("*** DATETIME:", app.locals.moment().format("YYYY MM DD, HH:mm:ss"));
       testService.addCommentToVideos()
       // testService.test()
     });
