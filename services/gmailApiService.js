@@ -110,7 +110,18 @@ exports.addReplyCommentToVideos = async function(req, res, next) {
                     rpoMainProductions.update(mainProductions[0]._id, {assignments: mainAssignments})
                   }
 
+                  this.ytReplyCommentNotification(contentReply)
+
                 }
+
+                // send reply notification
+                // let replyCommentData = {
+                //   postedFaq : postedFaq[0],
+                //   puppetMaster: accounts[0],
+
+
+                // }
+                
 
                 f=findAssignment.items.length
                 fc=findComments.length
@@ -407,6 +418,27 @@ exports.ytCommentNotification = async function(data) {
           <br>Youtube Link: https://www.youtube.com/watch?v=${data.commentData.ytId}
           <br>Comment: ${data.commentData.ytComment}
           <br>Todays Post Count: ${data.totalNoComment}
+          </p>
+          <p></p>
+      `, 
+  });
+  
+}
+
+exports.ytReplyCommentNotification = async function(data) {
+
+  return await transporter.sendMail({
+  sender: process.env.MAIL_FROM,
+  replyTo: process.env.MAIL_FROM,
+  from: process.env.MAIL_FROM, 
+  to: "carissa@chinesepod.com",
+  cc: ["felix@bigfoot.com", "rexy@bigfoot.com", "rebecca@chinesepod.com"],
+  subject: data.puppetMaster.displayName + " replied to a comment in Youtube ID " + data.ytId + " at " +moment().format('MMMM Do YYYY, h:mm:ss a'), 
+  html: `<p>Hi Admin,</p>
+          <p>Puppet Master: ${data.puppetMaster.displayName}
+          <br>Sock Puppet: ${data.puppet.displayName}
+          <br>Youtube Link: https://www.youtube.com/watch?v=${data.ytId}
+          <br>Reply Comment: ${data.ytComment}
           </p>
           <p></p>
       `, 
