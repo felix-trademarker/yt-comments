@@ -155,7 +155,7 @@ exports.addReplyCommentToVideos = async function(req, res, next) {
               findNotifyData.commentSnippet = commentSnippet
               rpoEmailNotifications.put(findNotifyData)
               
-              if(process.env.ENVIRONMENT !== 'dev'){
+              if(process.env.ENVIRONMENT !== 'dev' && moment().diff(moment(commentSnippet.publishedAt),"weeks") < 4){
                 this.ytNotification(dataNotify)
               }
 
