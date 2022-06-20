@@ -78,7 +78,7 @@ exports.addReplyCommentToVideos = async function(req, res, next) {
                 ytComment: commentAnswer
               }
 
-              if (moment().diff(moment(commentSnippet.publishedAt),"minutes") < 20) {
+              if (moment().diff(moment(commentSnippet.publishedAt),"minutes") < 12) {
                 console.log("Too early to reply")
                 return;
               }
