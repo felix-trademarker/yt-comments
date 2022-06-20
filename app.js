@@ -70,9 +70,18 @@ conn.connectToServer( function( err, client ) { // MAIN MONGO START
     });
   }
 
+  console.log("*** DATETIME:", app.locals.moment().format("YYYY MM DD, HH:mm:ss"));
+
+  // cron.schedule('* 1,2 * * * *', () => {
+  //   console.log("==== CRON RUNS EVERY 13MIN-21MIN RAND FOR PUPPETS ====");
+  //   console.log("*** DATETIME:", app.locals.moment().format("YYYY MM DD, HH:mm:ss"));
+  //   // testService.addCommentToVideos()
+  //   // testService.test()
+  // });
+
   // testService.addReplyCommentToVideos()
 
-  testService.addCommentToVideos()
+  // testService.addCommentToVideos()
 
   // let helpers = require('./helpers')
   // let puppet = helpers.getPuppetEnv()
