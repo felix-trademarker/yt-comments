@@ -2,6 +2,8 @@ let _table = process.env.TBLEXT + "accounts";
 var Model = require('./_model')
 var defaultModel = new Model(_table)
 var moment = require('moment')
+let helpers = require('./../helpers')
+
 
 let conn = require('../config/DbConnect');
 const app = require('../app');
@@ -36,7 +38,7 @@ module.exports = {
 
             // console.log(moment().subtract("1", "day").format());
 			// let query = {role: "commenter", lastCrawled : {$lte : moment().subtract("1", "day").format() }  }
-			let query = {emailAddress: process.env.puppet}
+			let query = {emailAddress: helpers.getPuppetEnv()}
 			
             conn.getDb()
                 .collection(_table)

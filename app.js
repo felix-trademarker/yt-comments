@@ -73,6 +73,10 @@ conn.connectToServer( function( err, client ) { // MAIN MONGO START
 
   // testService.addCommentToVideos()
 
+  // let helpers = require('./helpers')
+  // let puppet = helpers.getPuppetEnv()
+  // console.log(puppet);
+
 })
 
 
