@@ -71,7 +71,7 @@ conn.connectToServer( function( err, client ) { // MAIN MONGO START
 
   // testService.addReplyCommentToVideos()
 
-  // testService.addCommentToVideos()
+  testService.addCommentToVideos()
 
 })
 

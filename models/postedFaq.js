@@ -81,7 +81,7 @@ module.exports = {
                 .collection(_table)
                 .find()
                 .limit(1)
-				.sort( { "lastCrawled": 1 } )
+				.sort( { "dateCreated": -1 } )
                 .toArray(function(err, result) {
 					
                     if (err) {

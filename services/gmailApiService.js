@@ -83,7 +83,7 @@ exports.addReplyCommentToVideos = async function(req, res, next) {
                 return;
               }
 
-              if(true | process.env.ENVIRONMENT !== 'dev'){
+              if(process.env.ENVIRONMENT !== 'dev'){
                 console.log("adding comment", contentReply )
                 
                 this.insertReplyComment(oauth2Client, contentReply)
@@ -198,7 +198,7 @@ exports.addCommentToVideos = async function(req, res, next) {
       return;
     }
 
-    if (lastPosted && lastPosted.length > 0 && moment().diff(moment(lastPosted[0].dateCreated),"minutes") < 15) {
+    if (lastPosted && lastPosted.length > 0 && moment().diff(moment(lastPosted[0].dateCreated),"minutes") < 20) {
       console.log("CANCELLED: TOO EARLY TO ADD NEW POST")
       return;
     }
@@ -253,6 +253,14 @@ exports.addCommentToVideos = async function(req, res, next) {
             rpoMainProductions.update(mainProductions[0]._id, {assignments: mainAssignments})
           }
 
+          // SEND EMAIL NOTIFICATION 
+          let dataCommentNotif = {
+            totalNoComment : puppetPostedToday.length,
+            commentData : commentData
+
+          }
+          this.ytCommentNotification(dataCommentNotif)
+
         }
 
       }
@@ -264,26 +272,8 @@ exports.addCommentToVideos = async function(req, res, next) {
 
   } // close if has data fetch
 
-  
-
-  
-
-  // rpoVideos.update(videos[i]._id, {lastCrawled: moment().format()})
-  
- 
 }
 
-// exports.extrackAssignments = async function(auth, content) {
-
-//   let assignments = await rpoAssignments.get()
-
-//   if(assignments)
-//   for(let i=0; i < assignments[0].assignments.length; i++) {
-//     await rpoAssignments.put(assignments[0].assignments[i])
-//   }
-//   // console.log(assignments);
-
-// }
 
 exports.insertComment = async function(auth, content) {
 
@@ -391,11 +381,32 @@ exports.ytNotification = async function(data) {
   replyTo: process.env.MAIL_FROM,
   from: process.env.MAIL_FROM, 
   to: "carissa@chinesepod.com",
-  cc: "felix@bigfoot.com",
+  cc: ["felix@bigfoot.com", "rexy@bigfoot.com", "rebecca@chinesepod.com"],
   subject: "Unreplied YOUTUBE Comment - "+moment(data.commentSnippet.publishedAt).format('MMMM Do YYYY, h:mm:ss a'), 
   html: `<p>Hi Admin,</p>
-          <p>Youtube ID: ${data.youtubeID}
+          <p>Youtube Link: https://www.youtube.com/watch?v=${data.youtubeID}
           <br>Comment: ${data.commentSnippet.textOriginal}
+          </p>
+          <p></p>
+      `, 
+  });
+  
+}
+
+exports.ytCommentNotification = async function(data) {
+
+  return await transporter.sendMail({
+  sender: process.env.MAIL_FROM,
+  replyTo: process.env.MAIL_FROM,
+  from: process.env.MAIL_FROM, 
+  to: "carissa@chinesepod.com",
+  cc: ["felix@bigfoot.com", "rexy@bigfoot.com", "rebecca@chinesepod.com"],
+  subject: data.commentData.puppet.displayName + " added new comment in Youtube ID " + data.commentData.ytId + " at " +moment(data.commentData.dateCreated).format('MMMM Do YYYY, h:mm:ss a'), 
+  html: `<p>Hi Admin,</p>
+          <p>Commenter: ${data.commentData.puppet.displayName}
+          <br>Youtube Link: https://www.youtube.com/watch?v=${data.commentData.ytId}
+          <br>Comment: ${data.commentData.ytComment}
+          <br>Todays Post Count: ${data.totalNoComment}
           </p>
           <p></p>
       `, 
