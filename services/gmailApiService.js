@@ -439,9 +439,9 @@ exports.ytNotification = async function(data) {
   sender: process.env.MAIL_FROM,
   replyTo: process.env.MAIL_FROM,
   from: process.env.MAIL_FROM, 
-  // to: "yt@chinesepod.com",
-  // cc: ["carissa@chinesepod.com", "felix@bigfoot.com", "rexy@bigfoot.com", "rebecca@chinesepod.com"],
-  to: "felix@bigfoot.com",
+  to: "yt@chinesepod.com",
+  cc: ["carissa@chinesepod.com", "felix@bigfoot.com", "rexy@bigfoot.com", "rebecca@chinesepod.com"],
+  // to: "felix@bigfoot.com",
   subject: "Unreplied YOUTUBE Comment - "+moment(data.commentSnippet.publishedAt).format('MMMM Do YYYY, h:mm:ss a'), 
   html: `<p>Hi Admin,</p>
           <p>Youtube Link: https://www.youtube.com/watch?v=${data.youtubeID}
@@ -477,9 +477,9 @@ exports.ytCommentNotification = async function(data) {
   sender: process.env.MAIL_FROM,
   replyTo: process.env.MAIL_FROM,
   from: process.env.MAIL_FROM, 
-  // to: "yt@chinesepod.com",
-  // cc: ["carissa@chinesepod.com", "felix@bigfoot.com", "rexy@bigfoot.com", "rebecca@chinesepod.com"],
-  to: "felix@bigfoot.com",
+  to: "yt@chinesepod.com",
+  cc: ["carissa@chinesepod.com", "felix@bigfoot.com", "rexy@bigfoot.com", "rebecca@chinesepod.com"],
+  // to: "felix@bigfoot.com",
   subject: data.commentData.puppet.displayName + " added new comment in Youtube ID " + data.commentData.ytId + " at " +moment(data.commentData.dateCreated).format('MMMM Do YYYY, h:mm:ss a'), 
   html: `<p>Hi Admin,</p>
           <p>Commenter: ${data.commentData.puppet.displayName}
@@ -518,9 +518,9 @@ exports.ytReplyCommentNotification = async function(data) {
   sender: process.env.MAIL_FROM,
   replyTo: process.env.MAIL_FROM,
   from: process.env.MAIL_FROM, 
-  // to: "yt@chinesepod.com",
-  // cc: ["carissa@chinesepod.com", "felix@bigfoot.com", "rexy@bigfoot.com", "rebecca@chinesepod.com"],
-  to: "felix@bigfoot.com",
+  to: "yt@chinesepod.com",
+  cc: ["carissa@chinesepod.com", "felix@bigfoot.com", "rexy@bigfoot.com", "rebecca@chinesepod.com"],
+  // to: "felix@bigfoot.com",
   subject: data.puppetMaster.displayName + " replied to a comment in Youtube ID " + data.ytId + " at " +moment().format('MMMM Do YYYY, h:mm:ss a'), 
   html: `<p>Hi Admin,</p>
           <p>Puppet Master: ${data.puppetMaster.displayName}
