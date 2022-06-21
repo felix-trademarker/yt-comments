@@ -69,7 +69,17 @@ conn.connectToServer( function( err, client ) { // MAIN MONGO START
     });
   }
 
+  // test cron running
+  if (process.env.jobScheduleTester) 
+  cron.schedule(process.env.jobScheduleTester, () => {
+    console.log("==== CRON RUNS EVERY 13MIN-21MIN RAND FOR PUPPETS ====");
+    console.log("*** DATETIME:", app.locals.moment().format("YYYY MM DD, HH:mm:ss"));
+    // testService.addCommentToVideos()
+  });
+
   console.log("*** DATETIME:", app.locals.moment().format("YYYY MM DD, HH:mm:ss"));
+
+  // testService.addCommentToVideos()
 
 
 })

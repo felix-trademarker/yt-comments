@@ -216,6 +216,19 @@ exports.addCommentToVideos = async function(req, res, next) {
 
     oauth2Client.credentials = accounts[0];
 
+    // test START
+    // let commentData = {
+    //   ytId: video.youtubeID,
+    //   ytComment: ""
+    // }
+    // let comments = await this.getComments(oauth2Client,commentData)
+    // // for (let i=0; i < comments.length; i++) {
+    // //   if(comments[i].replies)
+    //   console.log(comments);
+    // // }
+    // return;
+    // test END
+
     // fetch assignment collection to get faq items
     let assignments = await rpoAssignments.fetchLinkedVideo(video.lesson)
 
@@ -270,7 +283,23 @@ exports.addCommentToVideos = async function(req, res, next) {
             commentData : commentData
 
           }
-          this.ytCommentNotification(dataCommentNotif)
+          // this.ytCommentNotification(dataCommentNotif)
+
+          // let commentData = {
+          //   ytId: videos[i].youtubeID,
+          //   ytComment: "",
+          // }
+      
+          // check video for comment that doesn't have any reply
+          
+          let this_ = this;
+          setTimeout(async function(){
+            
+            let comments = await this_.getComments(oauth2Client,commentData)
+            dataCommentNotif.comments = comments
+            this_.ytCommentNotification(dataCommentNotif)
+
+          }, 5000);
 
         }
 
@@ -347,8 +376,9 @@ exports.getComments = async function(auth, content) {
 
     service.commentThreads.list({
         auth: auth,
-        part: 'snippet',
+        part: 'snippet,replies',
         videoId: content.ytId,
+        maxResults: 50,
     }, function(err, response) {
       if (err) {
         console.log('The API returned an error: ' + err);
@@ -406,12 +436,31 @@ exports.ytNotification = async function(data) {
 
 exports.ytCommentNotification = async function(data) {
 
+  let commentHtml = "";
+
+  if( data && data.comments ) {
+    for (let i=0; i < data.comments.length; i++) {
+      let comment = data.comments[i].snippet
+      let replies = data.comments[i].replies
+      let replyHtml = "<ul>"
+      if (replies) {
+        for (let r=0; r < replies.comments.length; r++) {
+          // console.log(replies)
+          replyHtml += `<li>${replies.comments[r].snippet.authorDisplayName} >>>> ${replies.comments[r].snippet.textOriginal}</li>`
+        }
+      }
+
+      commentHtml += `<li>${comment.topLevelComment.snippet.authorDisplayName} >>> ${comment.topLevelComment.snippet.textOriginal} ${replyHtml}</li>`
+    }
+  }
+
   return await transporter.sendMail({
   sender: process.env.MAIL_FROM,
   replyTo: process.env.MAIL_FROM,
   from: process.env.MAIL_FROM, 
-  to: "carissa@chinesepod.com",
-  cc: ["felix@bigfoot.com", "rexy@bigfoot.com", "rebecca@chinesepod.com"],
+  to: "yt@chinesepod.com",
+  cc: ["carissa@chinesepod.com", "felix@bigfoot.com", "rexy@bigfoot.com", "rebecca@chinesepod.com"],
+  // to: "felix@bigfoot.com",
   subject: data.commentData.puppet.displayName + " added new comment in Youtube ID " + data.commentData.ytId + " at " +moment(data.commentData.dateCreated).format('MMMM Do YYYY, h:mm:ss a'), 
   html: `<p>Hi Admin,</p>
           <p>Commenter: ${data.commentData.puppet.displayName}
@@ -419,7 +468,8 @@ exports.ytCommentNotification = async function(data) {
           <br>Comment: ${data.commentData.ytComment}
           <br>Todays Post Count: ${(data.totalNoComment + 1)}
           </p>
-          <p></p>
+          <p>***** Current Video Comments *****</p>
+          <ul>${commentHtml}</ul>
       `, 
   });
   
@@ -431,8 +481,8 @@ exports.ytReplyCommentNotification = async function(data) {
   sender: process.env.MAIL_FROM,
   replyTo: process.env.MAIL_FROM,
   from: process.env.MAIL_FROM, 
-  to: "carissa@chinesepod.com",
-  cc: ["felix@bigfoot.com", "rexy@bigfoot.com", "rebecca@chinesepod.com"],
+  to: "yt@chinesepod.com",
+  cc: ["carissa@chinesepod.com", "felix@bigfoot.com", "rexy@bigfoot.com", "rebecca@chinesepod.com"],
   subject: data.puppetMaster.displayName + " replied to a comment in Youtube ID " + data.ytId + " at " +moment().format('MMMM Do YYYY, h:mm:ss a'), 
   html: `<p>Hi Admin,</p>
           <p>Puppet Master: ${data.puppetMaster.displayName}
