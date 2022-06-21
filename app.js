@@ -50,7 +50,7 @@ conn.connectToServer( function( err, client ) { // MAIN MONGO START
   if(process.env.cronServe == "puppetMaster") {
     // console.log("puppetMaster")
     cron.schedule('0 */10 9-16 * * mon-fri', () => { 
-      console.log("==== CRON RUNS EVERY 20MIN FOR PUPPET MASTERS FROM 9AM-4PM TIMEZONE: America/New_York ====");
+      console.log("==== CRON RUNS EVERY 10MIN FOR PUPPET MASTERS FROM 9AM-4PM TIMEZONE: America/New_York ====");
       testService.addReplyCommentToVideos()
     }, {
       scheduled: true,
@@ -60,32 +60,17 @@ conn.connectToServer( function( err, client ) { // MAIN MONGO START
  
   
   // puppet 
-  if(process.env.cronServe == "sockPuppet") {
+  if(process.env.cronServe != "sockPuppet") {
     // console.log("sockPuppet")
-    cron.schedule('0 13,15,17,19,21 10-15 * * *', () => {
+    cron.schedule(process.env.jobSchedulePuppet, () => {
       console.log("==== CRON RUNS EVERY 13MIN-21MIN RAND FOR PUPPETS ====");
       console.log("*** DATETIME:", app.locals.moment().format("YYYY MM DD, HH:mm:ss"));
       testService.addCommentToVideos()
-      // testService.test()
     });
   }
 
   console.log("*** DATETIME:", app.locals.moment().format("YYYY MM DD, HH:mm:ss"));
 
-  // cron.schedule('0 1,2 * * * *', () => {
-  //   console.log("==== CRON RUNS EVERY 13MIN-21MIN RAND FOR PUPPETS ====");
-  //   console.log("*** DATETIME:", app.locals.moment().format("YYYY MM DD, HH:mm:ss"));
-  //   // testService.addCommentToVideos()
-  //   // testService.test()
-  // });
-
-  // testService.addReplyCommentToVideos()
-
-  // testService.addCommentToVideos()
-
-  // let helpers = require('./helpers')
-  // let puppet = helpers.getPuppetEnv()
-  // console.log(puppet);
 
 })
 
