@@ -83,7 +83,7 @@ exports.addReplyCommentToVideos = async function(req, res, next) {
                 return;
               }
 
-              if(process.env.ENVIRONMENT !== 'dev'){
+              if(true || process.env.ENVIRONMENT !== 'dev'){
                 console.log("adding comment", contentReply )
                 
                 this.insertReplyComment(oauth2Client, contentReply)
@@ -97,6 +97,7 @@ exports.addReplyCommentToVideos = async function(req, res, next) {
                   contentReply.dateCreated = moment().format()
                   rpoPostedFaq.update(postedFaq[0]._id, { replied: contentReply })
 
+                  contentReply.puppet = postedFaq[0].puppet
                   // UPDATE CP.PRODUCTION RECORD
                   let mainProductions = await rpoMainProductions.findQuery({"assignments.ID":findAssignment.ID})
 
@@ -110,7 +111,19 @@ exports.addReplyCommentToVideos = async function(req, res, next) {
                     rpoMainProductions.update(mainProductions[0]._id, {assignments: mainAssignments})
                   }
 
-                  this.ytReplyCommentNotification(contentReply)
+                  // this.ytReplyCommentNotification(contentReply)
+
+                  let this_ = this;
+                  setTimeout(async function(){
+                    
+                    let comments = await this_.getComments(oauth2Client,contentReply)
+                    contentReply.comments = comments
+                    this_.ytReplyCommentNotification(contentReply)
+
+                    // update video record
+                    rpoVideos.update(videos[i]._id, {comments : comments})
+
+                  }, 5000);
 
                 }
 
@@ -294,10 +307,15 @@ exports.addCommentToVideos = async function(req, res, next) {
           
           let this_ = this;
           setTimeout(async function(){
-            
+
+            let masterAccounts = await rpoAccounts.getMasterPuppet()
+            oauth2Client.credentials = masterAccounts[0];
             let comments = await this_.getComments(oauth2Client,commentData)
             dataCommentNotif.comments = comments
             this_.ytCommentNotification(dataCommentNotif)
+
+            // update video record
+            rpoVideos.update(video._id, {comments : comments})
 
           }, 5000);
 
@@ -421,8 +439,9 @@ exports.ytNotification = async function(data) {
   sender: process.env.MAIL_FROM,
   replyTo: process.env.MAIL_FROM,
   from: process.env.MAIL_FROM, 
-  to: "carissa@chinesepod.com",
-  cc: ["felix@bigfoot.com", "rexy@bigfoot.com", "rebecca@chinesepod.com"],
+  // to: "yt@chinesepod.com",
+  // cc: ["carissa@chinesepod.com", "felix@bigfoot.com", "rexy@bigfoot.com", "rebecca@chinesepod.com"],
+  to: "felix@bigfoot.com",
   subject: "Unreplied YOUTUBE Comment - "+moment(data.commentSnippet.publishedAt).format('MMMM Do YYYY, h:mm:ss a'), 
   html: `<p>Hi Admin,</p>
           <p>Youtube Link: https://www.youtube.com/watch?v=${data.youtubeID}
@@ -458,9 +477,9 @@ exports.ytCommentNotification = async function(data) {
   sender: process.env.MAIL_FROM,
   replyTo: process.env.MAIL_FROM,
   from: process.env.MAIL_FROM, 
-  to: "yt@chinesepod.com",
-  cc: ["carissa@chinesepod.com", "felix@bigfoot.com", "rexy@bigfoot.com", "rebecca@chinesepod.com"],
-  // to: "felix@bigfoot.com",
+  // to: "yt@chinesepod.com",
+  // cc: ["carissa@chinesepod.com", "felix@bigfoot.com", "rexy@bigfoot.com", "rebecca@chinesepod.com"],
+  to: "felix@bigfoot.com",
   subject: data.commentData.puppet.displayName + " added new comment in Youtube ID " + data.commentData.ytId + " at " +moment(data.commentData.dateCreated).format('MMMM Do YYYY, h:mm:ss a'), 
   html: `<p>Hi Admin,</p>
           <p>Commenter: ${data.commentData.puppet.displayName}
@@ -477,12 +496,31 @@ exports.ytCommentNotification = async function(data) {
 
 exports.ytReplyCommentNotification = async function(data) {
 
+  let commentHtml = "";
+
+  if( data && data.comments ) {
+    for (let i=0; i < data.comments.length; i++) {
+      let comment = data.comments[i].snippet
+      let replies = data.comments[i].replies
+      let replyHtml = "<ul>"
+      if (replies) {
+        for (let r=0; r < replies.comments.length; r++) {
+          // console.log(replies)
+          replyHtml += `<li>${replies.comments[r].snippet.authorDisplayName} >>>> ${replies.comments[r].snippet.textOriginal}</li>`
+        }
+      }
+
+      commentHtml += `<li>${comment.topLevelComment.snippet.authorDisplayName} >>> ${comment.topLevelComment.snippet.textOriginal} ${replyHtml}</li>`
+    }
+  }
+
   return await transporter.sendMail({
   sender: process.env.MAIL_FROM,
   replyTo: process.env.MAIL_FROM,
   from: process.env.MAIL_FROM, 
-  to: "yt@chinesepod.com",
-  cc: ["carissa@chinesepod.com", "felix@bigfoot.com", "rexy@bigfoot.com", "rebecca@chinesepod.com"],
+  // to: "yt@chinesepod.com",
+  // cc: ["carissa@chinesepod.com", "felix@bigfoot.com", "rexy@bigfoot.com", "rebecca@chinesepod.com"],
+  to: "felix@bigfoot.com",
   subject: data.puppetMaster.displayName + " replied to a comment in Youtube ID " + data.ytId + " at " +moment().format('MMMM Do YYYY, h:mm:ss a'), 
   html: `<p>Hi Admin,</p>
           <p>Puppet Master: ${data.puppetMaster.displayName}
@@ -490,7 +528,8 @@ exports.ytReplyCommentNotification = async function(data) {
           <br>Youtube Link: https://www.youtube.com/watch?v=${data.ytId}
           <br>Reply Comment: ${data.ytComment}
           </p>
-          <p></p>
+          <p>***** Current Video Comments *****</p>
+          <ul>${commentHtml}</ul>
       `, 
   });
   

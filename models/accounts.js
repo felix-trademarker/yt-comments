@@ -57,4 +57,28 @@ module.exports = {
 		});
     },
 
+    getMasterPuppet : async function() {
+		return new Promise(function(resolve, reject) {
+
+            // console.log(moment().subtract("1", "day").format());
+			// let query = {role: "commenter", lastCrawled : {$lte : moment().subtract("1", "day").format() }  }
+			let query = {role: 'replyComment'}
+			
+            conn.getDb()
+                .collection(_table)
+                .find(query)
+                .limit(1)
+                .toArray(function(err, result) {
+					
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve(result);
+                    }
+
+			});
+
+		});
+    },
+
 }
