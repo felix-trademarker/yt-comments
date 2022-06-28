@@ -42,7 +42,7 @@ exports.addReplyCommentToVideos = async function(req, res, next) {
     let commentData = {
         ytId: videos[i].youtubeID,
         ytComment: "",
-    }
+    } 
 
     // update videos 1st to avoid infinite loop
     rpoVideos.update(videos[i]._id, {lastCrawledReply3: moment().format()})
