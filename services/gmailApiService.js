@@ -42,6 +42,9 @@ exports.addReplyCommentToVideos = async function(req, res, next) {
         ytComment: "",
     }
 
+    // update videos 1st to avoid infinite loop
+    rpoVideos.update(videos[i]._id, {lastCrawledReply3: moment().format()})
+
     // check video for comment that doesn't have any reply
     let comments = await this.getComments(oauth2Client,commentData)
     // find unreplied comment and check in list
@@ -185,7 +188,7 @@ exports.addReplyCommentToVideos = async function(req, res, next) {
       console.log("All comments already has replies");
     }
 
-    rpoVideos.update(videos[i]._id, {lastCrawledReply3: moment().format()})
+    // rpoVideos.update(videos[i]._id, {lastCrawledReply3: moment().format()})
   }
  
 }
@@ -226,6 +229,10 @@ exports.addCommentToVideos = async function(req, res, next) {
       console.log("CANCELLED: TOO EARLY TO ADD NEW POST")
       return;
     }
+
+    // update record first
+    rpoAccounts.update(accounts[0]._id, {lastCrawled: moment().format()})
+    rpoVideos.update(video._id, {lastCrawled: moment().format()})
 
     oauth2Client.credentials = accounts[0];
 
