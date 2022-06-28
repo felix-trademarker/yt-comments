@@ -71,7 +71,8 @@ class Model{
                 function(err, result) {
                 
                 if (err) reject(err);
-					
+                    
+                console.log('updated');
                 resolve(result);
                 
 			});
