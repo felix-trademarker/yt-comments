@@ -9,6 +9,7 @@ var cron = require('node-cron');
 var flash = require('express-flash-2');
 
 var testService = require('./services/gmailApiService')
+var imapService = require('./services/mailParser')
 
 var app = express();
 
@@ -49,7 +50,7 @@ conn.connectToServer( function( err, client ) { // MAIN MONGO START
   // });
   if(process.env.cronServe == "puppetMaster") {
     // console.log("puppetMaster")
-    cron.schedule('0 */10 8-16 * * mon-fri', () => { 
+    cron.schedule('0 */10 8-16 * * mon-fri', () => {
       console.log("==== CRON RUNS EVERY 10MIN FOR PUPPET MASTERS FROM 9AM-4PM TIMEZONE: America/New_York ====");
       testService.addReplyCommentToVideos()
     }, {
@@ -82,7 +83,7 @@ conn.connectToServer( function( err, client ) { // MAIN MONGO START
   // testService.addCommentToVideos()
   // testService.addReplyCommentToVideos()
 
-
+  testService.updateAssignments()
 })
 
 

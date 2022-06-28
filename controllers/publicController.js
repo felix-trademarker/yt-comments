@@ -101,13 +101,7 @@ exports.index = async function(req, res, next) {
 
                     let videoList = await rpoVideoList.findQuery({lesson:lessonId})
 
-                    let videoData = {
-                        lesson: lessonId,
-                        youtubeID: videoList ? videoList[0].youtubeID : null,
-                        assigned: true,
-                        assignedData: data._id,
-                        lastCrawled: moment().format()
-                    }
+                    
 
                     
                     if(productionAssignment.assignments[ls].items && productionAssignment.assignments[ls].items.length){
@@ -116,11 +110,85 @@ exports.index = async function(req, res, next) {
                         assignment.lesson = lessonId,
                         assignment.youtubeID = videoList ? videoList[0].youtubeID : null,
                         assignment.assigned = true,
+                        assignment.type = 'simplified',
                         assignment.assignedData = data._id,
                         assignment.lastCrawled = moment().format()
                         
                         rpoAssignments.put(assignment)
+
+                        let videoData = {
+                            lesson: lessonId,
+                            youtubeID: videoList ? videoList[0].youtubeID : null,
+                            assigned: true,
+                            type: 'simplified',
+                            assignedData: data._id,
+                            lastCrawled: moment().format()
+                        }
+
                         rpoVideos.put(videoData)
+
+                        if (videoList && videoList[0].youtubeIDtrad) {
+
+                            let videoDataTrad = {
+                                lesson: lessonId,
+                                youtubeID: videoList ? videoList[0].youtubeIDtrad : null,
+                                assigned: true,
+                                type: 'traditional',
+                                assignedData: data._id,
+                                lastCrawled: moment().format()
+                            }
+                            
+                            rpoVideos.put(videoDataTrad)
+                            
+                            let assignmentTrad = productionAssignment.assignments[ls]
+                            // let assignment = productionAssignment.assignments[ls]
+
+                            // replace simplified characters to traditional
+                            let items = [];
+                            if(assignmentTrad.items)
+                            for(let i=0; i < assignmentTrad.items.length; i++ ) { let item = assignmentTrad.items[i]
+                                // replace all simplified to traditional QUESTIONS
+                                for (let q=0; q < item.question.length; q++) {
+                                    let lookup;
+
+                                    if (hanzi.ifComponentExists(item.question[q]))
+                                    lookup = hanzi.definitionLookup(item.question[q])
+
+                                    if (lookup && lookup.length > 0) {
+                                        let qChar = lookup[0].traditional
+                                        item.question.replace(item.question[q], qChar)
+                                    }
+
+                                }
+
+                                // replace all simplified to traditional ANSWER
+                                for (let a=0; a < item.answer.length; a++) {
+                                    let lookup;
+
+                                    if (hanzi.ifComponentExists(item.answer[a]))
+                                    lookup = hanzi.definitionLookup(item.answer[a])
+
+                                    if (lookup && lookup.length > 0) {
+                                        let qChar = lookup[0].traditional
+                                        item.answer.replace(item.answer[a], qChar)
+                                    }
+
+                                }
+
+                                items.push(item)
+                            }
+
+                            assignmentTrad.items = items
+
+                            assignmentTrad.lesson = lessonId,
+                            assignmentTrad.youtubeID = videoList ? videoList[0].youtubeIDtrad : null,
+                            assignmentTrad.assigned = true,
+                            assignmentTrad.type = 'traditional',
+                            assignmentTrad.assignedData = data._id,
+                            assignmentTrad.lastCrawled = moment().format()
+                            
+                            rpoAssignments.put(assignmentTrad)
+                        }
                     }
 
                     // ls = productionAssignment.assignments.length
