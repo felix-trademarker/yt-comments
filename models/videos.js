@@ -55,7 +55,7 @@ module.exports = {
     fetchOneCron2 : async function() {
 		return new Promise(function(resolve, reject) {
 
-			let query = {assigned:true};
+			let query = {comments:{$exists:true}};
 			
             conn.getDb()
                 .collection(_table)

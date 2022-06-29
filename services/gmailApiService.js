@@ -23,8 +23,9 @@ let transporter = nodemailer.createTransport({
   }
 });
 
-exports.addReplyCommentToVideos = async function(req, res, next) {
+exports.addReplyCommentToVideos = async function(countCalled=0) {
 
+  console.log("called: ", countCalled);
   let videos = await rpoVideos.fetchOneCron2()
   let credentials = await helpers.getClientSecret()
 
@@ -33,6 +34,7 @@ exports.addReplyCommentToVideos = async function(req, res, next) {
   var redirectUrl = credentials.web.redirect_uris[0];
   var oauth2Client = new OAuth2(clientId, clientSecret, redirectUrl);
 
+  var flagReply=false;
   // console.log(videos);
   for(let i=0; i < videos.length; i++) {
       
@@ -71,7 +73,7 @@ exports.addReplyCommentToVideos = async function(req, res, next) {
         if(findAssignment) { 
           console.log("this",commentSnippet.textOriginal);
           for(let f=0; f < findAssignment.items.length; f++) {
-            console.log("checking >> ", findAssignment.items[f].question);
+            // console.log("checking >> ", findAssignment.items[f].question);
             if(commentSnippet.textOriginal.includes(findAssignment.items[f].question)){
               commentAnswer = findAssignment.items[f].answer
               console.log("found match");
@@ -90,9 +92,10 @@ exports.addReplyCommentToVideos = async function(req, res, next) {
 
               if(true || process.env.ENVIRONMENT !== 'dev'){
                 console.log("adding comment", contentReply )
-                
+
                 this.insertReplyComment(oauth2Client, contentReply)
 
+                flagReply = true;
                 // add updates here
                 let postedFaq = await rpoPostedFaq.findQuery({ ytComment: commentSnippet.textOriginal })
                 
@@ -191,7 +194,10 @@ exports.addReplyCommentToVideos = async function(req, res, next) {
     }
 
     // rpoVideos.update(videos[i]._id, {lastCrawledReply3: moment().format()})
-  }
+  } // end for loop
+
+  // RECALL THIS FUNCTION IF NO FOUND COMMENT
+  if (countCalled < 5 && !flagReply) this.addReplyCommentToVideos(countCalled+1)
  
 }
 
