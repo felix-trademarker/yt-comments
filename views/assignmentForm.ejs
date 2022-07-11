@@ -1,0 +1,50 @@
+<html>
+    <head>
+        <title>Assignment Form | <%= assignment.ID %></title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+        <style>
+            ol li{
+                margin-bottom: 20px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="row">
+                <div class="col-md-12">
+                    <h2>Assignment Form</h2>
+
+                    <h4>FAQ ITEMS</h4>
+
+                    <% if(assignment.items) { %>
+                        <form class="" method="post">
+                            <ol>
+                            <% for(let i=0; i < assignment.items.length; i++) { %>
+                                <li>
+                                <div class="col-12">
+                                    <label for="q-<%= i %>">Question:</label>
+                                    <input id="q-<%= i %>" type="text" class="form-control" name="item[<%= i %>][question]" value="<%= assignment.items[i].question %>">
+                                </div>
+
+                                <div class="col-12">
+                                    <label for="a-<%= i %>">Answer:</label>
+                                    <input id="a-<%= i %>" type="text" class="form-control" name="item[<%= i %>][answer]" value="<%= assignment.items[i].answer %>">
+                                </div>
+                                
+                                </li>
+                            <% } %>
+                            </ol>
+
+                            <input type="submit" value="Update FAQ">
+                        </form>
+
+                    <% } else { %>
+                        <p>Sorry, No items found</p>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+    </body>
+</html>

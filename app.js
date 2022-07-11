@@ -71,6 +71,15 @@ conn.connectToServer( function( err, client ) { // MAIN MONGO START
     });
   }
 
+  if(process.env.cronServe == "dataUpdater") {
+    console.log("updater")
+
+    // testService.dataUpdater();
+    // cron.schedule(process.env.jobSchedulePuppet, () => {
+    //   console.log("==== CRON RUNS EVERY 13MIN-21MIN RAND FOR PUPPETS ====");
+    // });
+  }
+
   // test cron running
   if (process.env.jobScheduleTester) 
   cron.schedule(process.env.jobScheduleTester, () => {

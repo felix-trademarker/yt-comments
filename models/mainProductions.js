@@ -29,6 +29,27 @@ module.exports = {
     // ADD CUSTOM FUNCTION BELOW ========================
     // ==================================================
 
-    
+    getProductions : async function() {
+		return new Promise(function(resolve, reject) {
+
+            let query = {assignments:{$exists: true, $not: {$size: 0}}};
+            let fields = { 'fields': { 'name': 0 }}
+			
+            conn.getDb()
+                .collection(_table)
+                .find(query, fields)
+                .limit(1)
+                .toArray(function(err, result) {
+					
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve(result);
+                    }
+
+			});
+
+		});
+    },
     
 }

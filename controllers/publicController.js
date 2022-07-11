@@ -9,6 +9,9 @@ let rpoVideos = require('../models/videos')
 let rpoVideoList = require('../models/videoList')
 let rpoProductions = require('../models/productions')
 let rpoAssignments = require('../models/assignments')
+
+let rpoMainProductions = require('../models/mainProductions');
+
 let moment = require('moment')
 
 var SCOPES = ['https://www.googleapis.com/auth/youtube',
@@ -302,6 +305,50 @@ exports.addVideosSubmit = async function(req, res, next) {
 
     rpoVideos.put(data)
     res.redirect('/add-videos?m=added&v='+req.body.videoId);
+}
+
+exports.showAssignments = async function(req, res, next) {
+
+    let assignmentsTrad = await rpoAssignments.findQuery({type:"traditional"})
+
+    console.log("show assignments", assignmentsTrad);
+
+    res.render('assignments', {
+        title: '',
+        description: '',
+        keywords: '',
+        assignmentsTrad: assignmentsTrad
+    });
+}
+
+exports.showAssignmentForm = async function(req, res, next) {
+    // res.params.id
+
+    
+    let assignment = await rpoAssignments.find(req.params.id)
+
+    console.log("show assignments", assignment[0].items);
+
+    console.log("body", req.body)
+
+    if (req.body && req.body.item) {
+        // update list
+        let data = {
+            listUpdatedAt: moment().format(),
+            items: req.body.item
+        }
+        await rpoAssignments.update(assignment[0]._id, data)
+
+
+        res.redirect('/assignments')
+    }
+
+    res.render('assignmentForm', {
+        title: '',
+        description: '',
+        keywords: '',
+        assignment: assignment[0]
+    });
 }
 
 
