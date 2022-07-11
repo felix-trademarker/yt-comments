@@ -16,6 +16,7 @@
 
                     <table class="table">
                         <tr>
+                            <th>#</th>
                             <th>ID</th>
                             <th>Job Type</th>
                             <th>Lesson Type</th>
@@ -27,6 +28,7 @@
                         </tr>
                         <% for(let i=0; i < assignmentsTrad.length; i++){ %>
                         <tr>
+                            <td><%= i+1 %></td>
                             <td><%= assignmentsTrad[i].ID %></td>
                             <td><%= assignmentsTrad[i].jobType %></td>
                             <td><%= assignmentsTrad[i].type %></td>
