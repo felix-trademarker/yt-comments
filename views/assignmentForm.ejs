@@ -4,7 +4,9 @@
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
         <style>
             ol li{
-                margin-bottom: 20px;
+                margin-bottom: 40px;
+                padding: 20px 0 40px 0;
+                border-bottom: 1px solid #ccc;
             }
         </style>
     </head>
@@ -18,24 +20,33 @@
 
                     <% if(assignment.items) { %>
                         <form class="" method="post">
-                            <ol>
+                            <ol id="listItems">
                             <% for(let i=0; i < assignment.items.length; i++) { %>
-                                <li>
-                                <div class="col-12">
-                                    <label for="q-<%= i %>">Question:</label>
-                                    <input id="q-<%= i %>" type="text" class="form-control" name="item[<%= i %>][question]" value="<%= assignment.items[i].question %>">
+                                <li class="row">
+                                <div class="col-10">
+                                    <div class="col-12">
+                                        <label for="q-<%= i %>">Question:</label>
+                                        <input id="q-<%= i %>" type="text" class="form-control" name="item[<%= i %>][question]" value="<%= assignment.items[i].question %>">
+                                    </div>
+                                    <div class="col-12">
+                                        <label for="a-<%= i %>">Answer:</label>
+                                        <input id="a-<%= i %>" type="text" class="form-control" name="item[<%= i %>][answer]" value="<%= assignment.items[i].answer %>">
+                                    </div>
                                 </div>
 
-                                <div class="col-12">
-                                    <label for="a-<%= i %>">Answer:</label>
-                                    <input id="a-<%= i %>" type="text" class="form-control" name="item[<%= i %>][answer]" value="<%= assignment.items[i].answer %>">
+                                <div class="col-auto">
+                                    <input type="button" class="btn btn-danger" value="Remove" onclick="remove(this)">
                                 </div>
+
+                                
                                 
                                 </li>
                             <% } %>
                             </ol>
 
-                            <input type="submit" value="Update FAQ">
+                            <input type="button" class="btn btn-success" value="Add FAQ +" id="addFaq">
+
+                            <input type="submit" class="btn btn-primary" value="Update FAQ">
                         </form>
 
                     <% } else { %>
@@ -46,5 +57,60 @@
         </div>
 
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+
+        <script>
+            $( document ).ready(function() {
+                $("#addFaq").click(function(){
+                    var listItems = document.getElementById("listItems")
+                    let elem = `<li class="row"><div class="col-10">
+                                    <div class="col-12">
+                                        <label for="q-${listItems.childElementCount}">Question:</label>
+                                        <input id="q-${listItems.childElementCount}" type="text" class="form-control" name="item[${listItems.childElementCount}][question]" value="">
+                                    </div>
+                                    <div class="col-12">
+                                        <label for="a-${listItems.childElementCount}">Answer:</label>
+                                        <input id="a-${listItems.childElementCount}" type="text" class="form-control" name="item[${listItems.childElementCount}][answer]" value="">
+                                    </div>
+                                </div>
+
+                                <div class="col-auto">
+                                    <input type="button" class="btn btn-danger" value="Remove" onclick="remove(this)">
+                                </div></li>`
+                    $("#listItems").append(elem)
+                })
+            });
+
+            function remove(el) {
+                console.log(el.parentNode.parentNode);
+                el.parentNode.parentNode.remove()
+            }
+
+            function add() {
+                var listItems = document.getElementById("listItems")
+                const node = document.createElement("li");
+                node.classList = "row"
+
+                const textnode = document.createElement(`<div class="col-10">
+                                    <div class="col-12">
+                                        <label for="q-${listItems.childElementCount}">Question:</label>
+                                        <input id="q-${listItems.childElementCount}" type="text" class="form-control" name="item[${listItems.childElementCount}][question]" value="">
+                                    </div>
+                                    <div class="col-12">
+                                        <label for="a-${listItems.childElementCount}">Answer:</label>
+                                        <input id="a-${listItems.childElementCount}" type="text" class="form-control" name="item[${listItems.childElementCount}][answer]" value="">
+                                    </div>
+                                </div>
+
+                                <div class="col-auto">
+                                    <input type="button" class="btn btn-danger" value="Remove" onclick="remove(this)">
+                                </div>`);
+                node.appendChild(textnode);
+                
+                // console.log(listItems.childElementCount);
+                listItems.appendChild(node)
+
+            }
+        </script>
     </body>
 </html>
