@@ -106,18 +106,7 @@ exports.addReplyCommentToVideos = async function(countCalled=0) {
                   rpoPostedFaq.update(postedFaq[0]._id, { replied: contentReply })
 
                   contentReply.puppet = postedFaq[0].puppet
-                  // UPDATE CP.PRODUCTION RECORD
-                  let mainProductions = await rpoMainProductions.findQuery({"assignments.ID":findAssignment.ID})
-
-                  if(mainProductions[0].assignments && mainProductions[0].assignments.length > 0){
-                    
-                    let assignmentNDX = mainProductions[0].assignments.findIndex((element) => element.ID == findAssignment.ID)
-                    let itemsNDX = mainProductions[0].assignments[assignmentNDX].items.findIndex((element) => element.question == findAssignment.items[f].question)
-                    let mainAssignments = mainProductions[0].assignments
-
-                    mainAssignments[assignmentNDX].items[itemsNDX].contentReply = contentReply
-                    rpoMainProductions.update(mainProductions[0]._id, {assignments: mainAssignments})
-                  }
+                  
 
                   // this.ytReplyCommentNotification(contentReply)
 
@@ -132,6 +121,19 @@ exports.addReplyCommentToVideos = async function(countCalled=0) {
                     rpoVideos.update(videos[i]._id, {comments : comments})
 
                   }, 5000);
+
+                  // UPDATE CP.PRODUCTION RECORD
+                  let mainProductions = await rpoMainProductions.findQuery({"assignments.ID":findAssignment.ID})
+
+                  if(mainProductions[0].assignments && mainProductions[0].assignments.length > 0){
+                    
+                    let assignmentNDX = mainProductions[0].assignments.findIndex((element) => element.ID == findAssignment.ID)
+                    let itemsNDX = mainProductions[0].assignments[assignmentNDX].items.findIndex((element) => element.question == findAssignment.items[f].question)
+                    let mainAssignments = mainProductions[0].assignments
+
+                    mainAssignments[assignmentNDX].items[itemsNDX].contentReply = contentReply
+                    rpoMainProductions.update(mainProductions[0]._id, {assignments: mainAssignments})
+                  }
 
                 }
 
@@ -292,19 +294,6 @@ exports.addCommentToVideos = async function(req, res, next) {
           rpoAccounts.update(accounts[0]._id, {lastCrawled: moment().format()})
           rpoVideos.update(video._id, {lastCrawled: moment().format()})
 
-          // UPDATE CP.PRODUCTION RECORD
-          let mainProductions = await rpoMainProductions.findQuery({"assignments.ID":assignment.ID})
-
-          if(mainProductions[0].assignments && mainProductions[0].assignments.length > 0){
-            
-            let assignmentNDX = mainProductions[0].assignments.findIndex((element) => element.ID == assignment.ID)
-            let itemsNDX = mainProductions[0].assignments[assignmentNDX].items.findIndex((element) => element.question == comment.question)
-            let mainAssignments = mainProductions[0].assignments
-
-            mainAssignments[assignmentNDX].items[itemsNDX].commentData = commentData
-            rpoMainProductions.update(mainProductions[0]._id, {assignments: mainAssignments})
-          }
-
           // SEND EMAIL NOTIFICATION 
           let dataCommentNotif = {
             totalNoComment : puppetPostedToday.length,
@@ -333,6 +322,19 @@ exports.addCommentToVideos = async function(req, res, next) {
             rpoVideos.update(video._id, {comments : comments})
 
           }, 5000);
+
+          // UPDATE CP.PRODUCTION RECORD
+          let mainProductions = await rpoMainProductions.findQuery({"assignments.ID":assignment.ID})
+
+          if(mainProductions[0].assignments && mainProductions[0].assignments.length > 0){
+            
+            let assignmentNDX = mainProductions[0].assignments.findIndex((element) => element.ID == assignment.ID)
+            let itemsNDX = mainProductions[0].assignments[assignmentNDX].items.findIndex((element) => element.question == comment.question)
+            let mainAssignments = mainProductions[0].assignments
+
+            mainAssignments[assignmentNDX].items[itemsNDX].commentData = commentData
+            rpoMainProductions.update(mainProductions[0]._id, {assignments: mainAssignments})
+          }
 
         }
 
