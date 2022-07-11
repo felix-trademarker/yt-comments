@@ -23,18 +23,18 @@
                             <ol id="listItems">
                             <% for(let i=0; i < assignment.items.length; i++) { %>
                                 <li class="row">
-                                <div class="col-10">
+                                <div class="col-12">
                                     <div class="col-12">
-                                        <label for="q-<%= i %>">Question:</label>
+                                        <label for="q-<%= i %>">Question: <%= assignment.items[i].question %></label>
                                         <input id="q-<%= i %>" type="text" class="form-control" name="item[<%= i %>][question]" value="<%= assignment.items[i].question %>">
                                     </div>
                                     <div class="col-12">
-                                        <label for="a-<%= i %>">Answer:</label>
+                                        <label for="a-<%= i %>">Answer: <%= assignment.items[i].answer %></label>
                                         <input id="a-<%= i %>" type="text" class="form-control" name="item[<%= i %>][answer]" value="<%= assignment.items[i].answer %>">
                                     </div>
                                 </div>
 
-                                <div class="col-auto">
+                                <div style="display:none;" class="col-auto">
                                     <input type="button" class="btn btn-danger" value="Remove" onclick="remove(this)">
                                 </div>
 
