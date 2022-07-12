@@ -25,11 +25,13 @@
                                 <li class="row">
                                 <div class="col-12">
                                     <div class="col-12">
-                                        <label for="q-<%= i %>">Question: <%= assignment.items[i].question %></label>
+                                        <label style="width:100%;margin-bottom:5px" for="q-<%= i %>">Question: <%= assignment.items[i].question %> <i style="float:right; margin-left:10px" class="btn btn-info suggestBtn" data-cont-id="s-<%= i %>" data-sentence-source="<%= assignment.items[i].question %>">Suggest</i></label>
+                                        <label style="display:none;width: 100%;padding: 5px;font-size: 12px;color: #5e5e5e;" id="s-<%= i %>">Please wait, checking library...</label>
                                         <input id="q-<%= i %>" type="text" class="form-control" name="item[<%= i %>][question]" value="<%= assignment.items[i].question %>">
                                     </div>
                                     <div class="col-12">
-                                        <label for="a-<%= i %>">Answer: <%= assignment.items[i].answer %></label>
+                                        <label style="width:100%;margin-bottom:5px" for="a-<%= i %>">Answer: <%= assignment.items[i].answer %> <i style="float:right; margin-left:10px" class="btn btn-info suggestBtn" data-cont-id="sa-<%= i %>" data-sentence-source="<%= assignment.items[i].answer %>">Suggest</i></label>
+                                        <label style="display:none;width: 100%;padding: 5px;font-size: 12px;color: #5e5e5e;" id="sa-<%= i %>">Please wait, checking library...</label>
                                         <input id="a-<%= i %>" type="text" class="form-control" name="item[<%= i %>][answer]" value="<%= assignment.items[i].answer %>">
                                     </div>
                                 </div>
@@ -61,6 +63,51 @@
 
         <script>
             $( document ).ready(function() {
+
+                let keys = [
+                    {
+                        email: "felix@bigfoot.com",
+                        key: "2024|j6O9Dr4Ih2uG7yRxkcbDudGPHuFvqSP2H4XCFBz6",
+                        status: true
+                    },
+                    {
+                        email: "angela@thecelebritycafe.com",
+                        key: "2034|PEOTv43NeYkPCHC9Ppy0ZlDCO6XfNAxJgN9zxS0G",
+                        status: true
+                    },
+                    {
+                        email: "kollin@digidance.com",
+                        key: "2044|WUfL1IEUxPWFB6MZ8mAk5dDpggU599cx0OCnc7Zp",
+                        status: true
+                    },
+                    {
+                        email: "kathy@onemodelplace.com",
+                        key: "2054|Us8W1U5Rnzru5VhIcq94R01YAKrf9gjtIPzxYAaw",
+                        status: true
+                    },
+                    {
+                        email: "trinidad@talency.com",
+                        key: "2064|G2mxWQxzGWZzindS8GeXGoMB9xCet3jddCOXWNOK",
+                        status: true
+                    },
+                    {
+                        email: "van@jallkids.com",
+                        key: "2074|9yu5tFq5HtFGi9B7MsrTqMNyz0kZ0SkJ0GomNJfM",
+                        status: true
+                    },
+                    {
+                        email: "vivien@chud.com",
+                        key: "2084|mDwUFXk0PNDakp4vyQyXf3qMk4lP838iFIxk8ryf",
+                        status: true
+                    },
+                    {
+                        email: "ariel@fusoku.com",
+                        key: "2094|yA4z1lkL2S2B0ICWOhVZLlr3jxF13v1CCbsHAynp",
+                        status: true
+                    }
+
+                ]
+
                 $("#addFaq").click(function(){
                     var listItems = document.getElementById("listItems")
                     let elem = `<li class="row"><div class="col-10">
@@ -79,6 +126,62 @@
                                 </div></li>`
                     $("#listItems").append(elem)
                 })
+
+                $(".suggestBtn").click(function(){
+                    let s = $(this).attr('data-sentence-source')
+                    let c = $(this).attr('data-cont-id')
+                    let key = getKey()
+                    // console.log(getKey());
+
+                    if (!key) {
+                        alert("Sorry, Reached max limit for free account");
+                        return;
+                    }
+    
+                    var settings = {
+                        "async": true,
+                        "crossDomain": true,
+                        "url": "https://app.plaraphy.com/api/paraphrase",
+                        "method": "POST",
+                        "headers": {
+                        "accept": "application/json",
+                        "content-type": "application/x-www-form-urlencoded",
+                        "authorization": "Bearer "+key.key,
+                        "cache-control": "no-cache"
+                        },
+                        "data": {
+                        "text": s
+                        }
+                    }
+
+                    $("#"+c).text("Please wait, checking library...")
+                    $("#"+c).show()
+
+                    let this_ = $(this)
+
+                    let keyIndex = keys.findIndex(el => el.email == key.email)
+                    console.log(keyIndex);
+
+                    $.ajax(settings).done(function (response) {
+                        console.log(response);
+                        if (response.message) {
+                            $("#"+c).text(response.message)
+                            // flag key to false
+                            let keyIndex = keys.findIndex(el => el.email == key.email)
+                            keys[keyIndex].status = false;
+                            this_.trigger("click")
+                        } else {
+                            $("#"+c).text(response.paraphrased)
+                        }
+                        
+                    });
+                })
+
+                function getKey(){
+                    return keys.find(el => el.status == true)
+                }
+
+                
             });
 
             function remove(el) {
