@@ -32,7 +32,7 @@ module.exports = {
     fetchOneCron : async function() {
 		return new Promise(function(resolve, reject) {
 
-			let query = {assigned:true, type: 'simplified'};
+			let query = {assigned:true};
 			
             conn.getDb()
                 .collection(_table)

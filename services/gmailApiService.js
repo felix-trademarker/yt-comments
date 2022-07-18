@@ -264,6 +264,14 @@ exports.addCommentToVideos = async function(req, res, next) {
 
     if (assignments && assignments.length > 0) {
       let assignment = assignments[0]
+
+      // if assignment is traditional check if this list is updated
+      if (assignment.type == 'traditional' && !assignment.listUpdatedAt) {
+        // return 
+        console.log("CANCELLED: Traditional faq needs modification")
+        return;
+      }
+
       let postedFaqs = await rpoPostedFaq.findQuery({assignmentId: assignment._id})
       let faqs = assignment.items
       let postIdx = postedFaqs.length
