@@ -272,6 +272,8 @@ exports.addCommentToVideos = async function(req, res, next) {
         return;
       }
 
+      console.log("**** continue *******", assignment.listUpdatedAt);
+
       let postedFaqs = await rpoPostedFaq.findQuery({assignmentId: assignment._id})
       let faqs = assignment.items
       let postIdx = postedFaqs.length
