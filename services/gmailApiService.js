@@ -266,7 +266,7 @@ exports.addCommentToVideos = async function(req, res, next) {
       let assignment = assignments[0]
 
       // if assignment is traditional check if this list is updated
-      if (assignment.type == 'traditional' && !assignment.listUpdatedAt) {
+      if (assignment.type == 'traditional' && typeof assignment.listUpdatedAt == "undefined") {
         // return 
         console.log("CANCELLED: Traditional faq needs modification")
         return;
