@@ -52,10 +52,10 @@ module.exports = {
 		});
     },
     
-    fetchLinkedVideo : async function(lessonNo) {
+    fetchLinkedVideo : async function(lessonNo,type) {
 		return new Promise(function(resolve, reject) {
 
-			let query = {jobType: "FAQ/"+lessonNo};
+			let query = {jobType: "FAQ/"+lessonNo, type: type};
 			
             conn.getDb()
                 .collection(_table)

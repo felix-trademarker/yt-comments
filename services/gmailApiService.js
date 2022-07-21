@@ -241,8 +241,8 @@ exports.addCommentToVideos = async function(req, res, next) {
     }
 
     // update record first
-    rpoAccounts.update(accounts[0]._id, {lastCrawled: moment().format()})
-    rpoVideos.update(video._id, {lastCrawled: moment().format()})
+    // rpoAccounts.update(accounts[0]._id, {lastCrawled: moment().format()})
+    // rpoVideos.update(video._id, {lastCrawled: moment().format()})
 
     oauth2Client.credentials = accounts[0];
 
@@ -260,7 +260,7 @@ exports.addCommentToVideos = async function(req, res, next) {
     // test END
 
     // fetch assignment collection to get faq items
-    let assignments = await rpoAssignments.fetchLinkedVideo(video.lesson)
+    let assignments = await rpoAssignments.fetchLinkedVideo(video.lesson, video.type)
 
     if (assignments && assignments.length > 0) {
       let assignment = assignments[0]
@@ -271,6 +271,10 @@ exports.addCommentToVideos = async function(req, res, next) {
         console.log("CANCELLED: Traditional faq needs modification")
         return;
       }
+
+      // console.log("BYPASS FILTER",assignment, video);
+
+      // return;
 
       console.log("**** continue *******", assignment.listUpdatedAt);
 
