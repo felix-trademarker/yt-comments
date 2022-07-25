@@ -123,17 +123,17 @@ exports.addReplyCommentToVideos = async function(countCalled=0) {
                   }, 5000);
 
                   // UPDATE CP.PRODUCTION RECORD
-                  let mainProductions = await rpoMainProductions.findQuery({"assignments.ID":findAssignment.ID})
+                  // let mainProductions = await rpoMainProductions.findQuery({"assignments.ID":findAssignment.ID})
 
-                  if(mainProductions[0].assignments && mainProductions[0].assignments.length > 0){
+                  // if(mainProductions[0].assignments && mainProductions[0].assignments.length > 0){
                     
-                    let assignmentNDX = mainProductions[0].assignments.findIndex((element) => element.ID == findAssignment.ID)
-                    let itemsNDX = mainProductions[0].assignments[assignmentNDX].items.findIndex((element) => element.question == findAssignment.items[f].question)
-                    let mainAssignments = mainProductions[0].assignments
+                  //   let assignmentNDX = mainProductions[0].assignments.findIndex((element) => element.ID == findAssignment.ID)
+                  //   let itemsNDX = mainProductions[0].assignments[assignmentNDX].items.findIndex((element) => element.question == findAssignment.items[f].question)
+                  //   let mainAssignments = mainProductions[0].assignments
 
-                    mainAssignments[assignmentNDX].items[itemsNDX].contentReply = contentReply
-                    rpoMainProductions.update(mainProductions[0]._id, {assignments: mainAssignments})
-                  }
+                  //   mainAssignments[assignmentNDX].items[itemsNDX].contentReply = contentReply
+                  //   rpoMainProductions.update(mainProductions[0]._id, {assignments: mainAssignments})
+                  // }
 
                 }
 
