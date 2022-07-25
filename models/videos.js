@@ -32,7 +32,13 @@ module.exports = {
     fetchOneCron : async function() {
 		return new Promise(function(resolve, reject) {
 
-			let query = {assigned:true};
+            let query = {assigned:true};
+            console.log(process.env.VIDTYPE);
+            if (process.env.VIDTYPE) {
+                query.type = process.env.VIDTYPE
+            }
+
+            console.log(query)
 			
             conn.getDb()
                 .collection(_table)

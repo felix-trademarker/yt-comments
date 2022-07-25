@@ -59,7 +59,7 @@ conn.connectToServer( function( err, client ) { // MAIN MONGO START
     });
   }
  
-  // testService.addCommentToVideos()
+  testService.addCommentToVideos()
   
   // puppet 
   if(process.env.cronServe == "sockPuppet") {
