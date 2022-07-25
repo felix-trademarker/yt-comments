@@ -268,6 +268,7 @@ exports.addCommentToVideos = async function(req, res, next) {
       // if assignment is traditional check if this list is updated
       if (assignment.type == 'traditional' && typeof assignment.listUpdatedAt == "undefined") {
         // return 
+        rpoVideos.update(video._id, {lastCrawled: moment().format()})
         console.log("CANCELLED: Traditional faq needs modification")
         return;
       }
