@@ -33,7 +33,7 @@ module.exports = {
 		return new Promise(function(resolve, reject) {
 
             let query = {assigned:true};
-            console.log(process.env.VIDTYPE);
+           
             if (process.env.VIDTYPE) {
                 query.type = process.env.VIDTYPE
             }

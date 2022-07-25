@@ -209,9 +209,6 @@ exports.addCommentToVideos = async function(req, res, next) {
   let videos = await rpoVideos.fetchOneCron()
   let video = videos && videos.length > 0 ? videos[0] : null
 
-  console.log(video);
-  return;
-  
   // check if it has data fetch
   if (video) {
     let credentials = await helpers.getClientSecret()
