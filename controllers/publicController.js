@@ -69,9 +69,17 @@ exports.index = async function(req, res, next) {
 
             let findAccount = await rpoAccounts.findQuery({ emailAddress : data.emailAddress })
 
-            if (findAccount && findAccount.length > 0) {
+            if (false) {
                 rpoAccounts.update(findAccount[0]._id, data)
             } else {
+
+                if (findAccount && findAccount.length > 0) {
+                    rpoAccounts.update(findAccount[0]._id, data)
+                    data._id = findAccount[0]._id
+                } else {
+                    data.role = "replyComment"
+                    await rpoAccounts.put(data)
+                }
 
                 // change approached
                 // fetch cp.production
@@ -92,8 +100,7 @@ exports.index = async function(req, res, next) {
                     // data.video = video
                 }
 
-                data.role = "replyComment"
-                await rpoAccounts.put(data)
+                
 
                 // add video list
                 if(productionAssignment && productionAssignment.assignments)
@@ -196,8 +203,6 @@ exports.index = async function(req, res, next) {
 
                     // ls = productionAssignment.assignments.length
                 }
-
-                
             }
             
 

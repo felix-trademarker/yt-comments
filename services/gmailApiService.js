@@ -292,6 +292,7 @@ exports.addCommentToVideos = async function(req, res, next) {
         }
         console.log("PREPARING COMMENT DATA >>> ",commentData);
 
+        rpoVideos.update(video._id, {lastCrawled: moment().format()})
         
         let commentResponse = await this.insertComment(oauth2Client,commentData)
 
@@ -307,7 +308,7 @@ exports.addCommentToVideos = async function(req, res, next) {
           console.log("ADD FAQ POSTED >>> ", commentData);
           rpoPostedFaq.put(commentData)
           rpoAccounts.update(accounts[0]._id, {lastCrawled: moment().format()})
-          rpoVideos.update(video._id, {lastCrawled: moment().format()})
+          // rpoVideos.update(video._id, {lastCrawled: moment().format()})
 
           // SEND EMAIL NOTIFICATION 
           let dataCommentNotif = {
