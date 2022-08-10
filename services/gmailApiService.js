@@ -25,7 +25,6 @@ let transporter = nodemailer.createTransport({
 
 exports.addReplyCommentToVideos = async function(countCalled=0) {
 
-  console.log("called: ", countCalled);
   let videos = await rpoVideos.fetchOneCron2()
   let credentials = await helpers.getClientSecret()
 
@@ -71,7 +70,7 @@ exports.addReplyCommentToVideos = async function(countCalled=0) {
         let findAssignment = findAssignments ? findAssignments[0] : null
         // console.log(findAssignment);
         if(findAssignment) { 
-          console.log("this",commentSnippet.textOriginal);
+
           for(let f=0; f < findAssignment.items.length; f++) {
             // console.log("checking >> ", findAssignment.items[f].question);
             if(commentSnippet.textOriginal.includes(findAssignment.items[f].question)){
@@ -91,7 +90,7 @@ exports.addReplyCommentToVideos = async function(countCalled=0) {
               }
 
               if(true || process.env.ENVIRONMENT !== 'dev'){
-                console.log("adding comment", contentReply )
+                console.log("adding comment", contentReply.ytComment )
 
                 this.insertReplyComment(oauth2Client, contentReply)
 
@@ -226,7 +225,7 @@ exports.addCommentToVideos = async function(req, res, next) {
     let puppetPostedToday = await rpoPostedFaq.findQuery({ "puppet.emailAddress": accounts[0].emailAddress, dateCreated: { $gte: moment().format("YYYY-MM-DD") } })
     
     if(accounts && accounts.length < 1){
-      console.log('NO AVAILABLE PUPPET FOR POSTING COMMENTS. PUPPET MUST ONLY POST 3 COMMENT PER DAY');
+      console.log('PUPPET NOT FOUND!!!');
       return;
     }
 
@@ -277,7 +276,7 @@ exports.addCommentToVideos = async function(req, res, next) {
 
       // return;
 
-      console.log("**** continue *******", assignment.listUpdatedAt);
+      console.log("**** continue *******", assignment.type);
 
       let postedFaqs = await rpoPostedFaq.findQuery({assignmentId: assignment._id})
       let faqs = assignment.items
@@ -290,7 +289,7 @@ exports.addCommentToVideos = async function(req, res, next) {
           ytId: video.youtubeID,
           ytComment: comment.question
         }
-        console.log("PREPARING COMMENT DATA >>> ",commentData);
+        console.log("PREPARING COMMENT DATA >>> ",commentData.ytComment);
 
         rpoVideos.update(video._id, {lastCrawled: moment().format()})
         
@@ -305,7 +304,6 @@ exports.addCommentToVideos = async function(req, res, next) {
           commentData.dateCreated = moment().format()
           console.log("SUCCESS IN POSTING A COMMENT!!!");
           // add record 
-          console.log("ADD FAQ POSTED >>> ", commentData);
           rpoPostedFaq.put(commentData)
           rpoAccounts.update(accounts[0]._id, {lastCrawled: moment().format()})
           // rpoVideos.update(video._id, {lastCrawled: moment().format()})

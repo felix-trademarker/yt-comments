@@ -20,7 +20,7 @@ exports.getPuppetEnv = function() {
     let endOfLastMonth = moment().startOf('month').subtract(1, 'week');
 
     let weekOfMonth = todaysDate.diff(endOfLastMonth, 'weeks');
-    console.log(weekOfMonth % 2);
+    // console.log(weekOfMonth % 2);
 
     return ((weekOfMonth % 2) === 1 ? process.env.puppet : (process.env.puppet2 ? process.env.puppet2 : process.env.puppet))
 
