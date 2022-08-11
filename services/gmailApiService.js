@@ -208,6 +208,8 @@ exports.addCommentToVideos = async function(req, res, next) {
   let videos = await rpoVideos.fetchOneCron()
   let video = videos && videos.length > 0 ? videos[0] : null
 
+  console.log('this here',video);
+  // return;
   // check if it has data fetch
   if (video) {
     let credentials = await helpers.getClientSecret()
@@ -274,6 +276,7 @@ exports.addCommentToVideos = async function(req, res, next) {
 
       // console.log("BYPASS FILTER",assignment, video);
 
+      // console.log("about to post comment");
       // return;
 
       console.log("**** continue *******", assignment.type);
@@ -291,7 +294,7 @@ exports.addCommentToVideos = async function(req, res, next) {
         }
         console.log("PREPARING COMMENT DATA >>> ",commentData.ytComment);
 
-        rpoVideos.update(video._id, {lastCrawled: moment().format()})
+        
         
         let commentResponse = await this.insertComment(oauth2Client,commentData)
 
@@ -356,10 +359,16 @@ exports.addCommentToVideos = async function(req, res, next) {
 
 
       // console.log();
+    } else {
+      rpoVideos.update(video._id, {lastCrawled: moment().format()})
+      console.log('no assignment found!, SKIP VIDEO');
     }
 
 
   } // close if has data fetch
+  else {
+    console.log("video not found");
+  }
 
 }
 
