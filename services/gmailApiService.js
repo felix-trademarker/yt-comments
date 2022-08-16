@@ -208,7 +208,7 @@ exports.addCommentToVideos = async function(req, res, next) {
   let videos = await rpoVideos.fetchOneCron()
   let video = videos && videos.length > 0 ? videos[0] : null
 
-  console.log('this here',video);
+  console.log('Checking Video',video.youtubeID);
   // return;
   // check if it has data fetch
   if (video) {
@@ -293,8 +293,6 @@ exports.addCommentToVideos = async function(req, res, next) {
           ytComment: comment.question
         }
         console.log("PREPARING COMMENT DATA >>> ",commentData.ytComment);
-
-        
         
         let commentResponse = await this.insertComment(oauth2Client,commentData)
 
@@ -355,6 +353,9 @@ exports.addCommentToVideos = async function(req, res, next) {
 
         }
 
+      } else {
+        rpoVideos.update(video._id, {lastCrawled: moment().format()})
+        console.log("No FAQ FOUND!");
       }
 
 
