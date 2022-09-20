@@ -285,7 +285,7 @@ exports.addCommentToVideos = async function(req, res, next) {
       let faqs = assignment.items
       let postIdx = postedFaqs.length
 
-      if (postIdx < faqs.length) {
+      if (postIdx < faqs.length && faqs[postIdx]) {
         // add comment faqs with position index
         let comment = faqs[postIdx]
         let commentData = {
