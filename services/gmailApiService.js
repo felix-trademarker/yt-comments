@@ -243,7 +243,7 @@ exports.addCommentToVideos = async function(req, res, next) {
 
     // update record first
     // rpoAccounts.update(accounts[0]._id, {lastCrawled: moment().format()})
-    // rpoVideos.update(video._id, {lastCrawled: moment().format()})
+    rpoVideos.update(video._id, {lastCrawled: moment().format()})
 
     oauth2Client.credentials = accounts[0];
 
