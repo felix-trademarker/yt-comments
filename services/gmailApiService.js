@@ -205,6 +205,12 @@ exports.addReplyCommentToVideos = async function(countCalled=0) {
 // SERVICE FOR COMMENTERS
 exports.addCommentToVideos = async function(req, res, next) {
 
+  // check schedule
+  if (process.env.daySched != (moment().format('D') % 2)) {
+    return false;
+  }
+  // console.log(moment().format('D') % 2);
+
   let videos = await rpoVideos.fetchOneCron()
   let video = videos && videos.length > 0 ? videos[0] : null
 
@@ -285,6 +291,10 @@ exports.addCommentToVideos = async function(req, res, next) {
       let faqs = assignment.items
       let postIdx = postedFaqs.length
 
+      // return false;
+      // console.log("day",moment().format('D') % 2)
+      
+
       if (postIdx < faqs.length && faqs[postIdx] && faqs[postIdx].question) {
         // add comment faqs with position index
         let comment = faqs[postIdx]
@@ -294,6 +304,8 @@ exports.addCommentToVideos = async function(req, res, next) {
         }
         console.log("PREPARING COMMENT DATA >>> ",commentData.ytComment);
         
+        
+        // return false;
         let commentResponse = await this.insertComment(oauth2Client,commentData)
 
         // if(process.env.ENVIRONMENT !== 'dev')
