@@ -42,7 +42,7 @@ conn.connectToServer158( function( err, client ) { // MAIN MONGO START
   app.use('/', publicRouter);
 
   // test for CRON
-  updaterService.upsertAssignment()
+  // updaterService.upsertAssignment()
   
   // sockpuppet | master puppet
   // cron.schedule('0 */6 * * * *', () => {
@@ -55,6 +55,14 @@ conn.connectToServer158( function( err, client ) { // MAIN MONGO START
     cron.schedule('0 */10 8-16 * * mon-fri', () => {
       console.log("==== CRON RUNS EVERY 10MIN FOR PUPPET MASTERS FROM 9AM-4PM TIMEZONE: America/New_York ====");
       testService.addReplyCommentToVideos()
+    }, {
+      scheduled: true,
+      timezone: "America/New_York"
+    });
+
+    cron.schedule('0 0 1 * * *', () => {
+      console.log("==== UPDATE ASSIGNMENTS FROM MAIN COLLECTION ====");
+      updaterService.upsertAssignment()
     }, {
       scheduled: true,
       timezone: "America/New_York"
