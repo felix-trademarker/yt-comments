@@ -19,6 +19,9 @@ module.exports = {
 	update : async function(id,data) {
         return await defaultModel.update(id,data)
     },
+    upsert : async function(q,data) {
+        return await defaultModel.upsert(q,data)
+    },
 	put : async function(data) {
         return await defaultModel.put(data)
     },

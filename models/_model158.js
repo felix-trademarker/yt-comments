@@ -8,7 +8,7 @@ class Model{
         var this_ = this
         return new Promise(function(resolve, reject) {
             
-            this_.db.getDb().collection(this_.table).find().toArray(function(err, result) {
+            this_.db.getDb158().collection(this_.table).find().toArray(function(err, result) {
 					
 				if (err) {
 					reject(err);
@@ -28,7 +28,7 @@ class Model{
             
             let query = { _id: ObjectID(id) };
 			
-			this_.db.getDb().collection(this_.table).find(query).toArray(function(err, result) {
+			this_.db.getDb158().collection(this_.table).find(query).toArray(function(err, result) {
 					
 				if (err) {
 					reject(err);
@@ -47,7 +47,7 @@ class Model{
         return new Promise(function(resolve, reject) {
             
 			
-			this_.db.getDb().collection(this_.table).find(query).toArray(function(err, result) {
+			this_.db.getDb158().collection(this_.table).find(query).toArray(function(err, result) {
 					
 				if (err) {
 					reject(err);
@@ -67,11 +67,12 @@ class Model{
 
             let query = { _id: ObjectID(id) };
 
-            this_.db.getDb().collection(this_.table).updateOne(query,{$set: data }, 
+            this_.db.getDb158().collection(this_.table).updateOne(query,{$set: data }, 
                 function(err, result) {
                 
                 if (err) reject(err);
-
+                    
+                console.log('updated');
                 resolve(result);
                 
 			});
@@ -84,7 +85,7 @@ class Model{
 
         return new Promise(function(resolve, reject) { 
 
-            this_.db.getDb().collection(this_.table).updateOne(query,{$set: data },{upsert:true}, 
+            this_.db.getDb158().collection(this_.table).updateOne(query,{$set: data },{upsert:true}, 
                 function(err, result) {
                 
                 if (err) reject(err);
@@ -100,7 +101,7 @@ class Model{
         var this_ = this
         return new Promise(function(resolve, reject) {
             
-			this_.db.getDb().collection(this_.table).insertOne(data, 
+			this_.db.getDb158().collection(this_.table).insertOne(data, 
 				function(err, result) {
 					if (err) reject(err);
 					
@@ -120,7 +121,7 @@ class Model{
 			let query = { _id: ObjectID(id) };
             
 
-			this_.db.getDb().collection(this_.table).deleteOne(query, function(err, result) {
+			this_.db.getDb158().collection(this_.table).deleteOne(query, function(err, result) {
 				if (result) {
 					console.log('ok');
 					resolve(result)

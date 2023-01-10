@@ -9,6 +9,7 @@ var cron = require('node-cron');
 var flash = require('express-flash-2');
 
 var testService = require('./services/gmailApiService')
+var updaterService = require('./services/dataUpdaterService')
 var imapService = require('./services/mailParser')
 
 var app = express();
@@ -29,6 +30,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 let conn = require('./config/DbConnect');
 conn.connectToServer( function( err, client ) { // MAIN MONGO START
+conn.connectToServer158( function( err, client ) { // MAIN MONGO START
 
   console.log("app running");
 
@@ -40,7 +42,7 @@ conn.connectToServer( function( err, client ) { // MAIN MONGO START
   app.use('/', publicRouter);
 
   // test for CRON
-    // testService.addReplyCommentToVideos()
+  updaterService.upsertAssignment()
   
   // sockpuppet | master puppet
   // cron.schedule('0 */6 * * * *', () => {
@@ -94,6 +96,7 @@ conn.connectToServer( function( err, client ) { // MAIN MONGO START
   // testService.addReplyCommentToVideos()
 
   // testService.updateAssignments()
+})
 })
 
 

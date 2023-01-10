@@ -1,5 +1,5 @@
-let _table = process.env.TBLEXT + "videoList";
-var Model = require('./_model')
+let _table = "cp.productions";
+var Model = require('./_model158')
 var defaultModel = new Model(_table)
 
 let conn = require('../config/DbConnect');
@@ -19,11 +19,11 @@ module.exports = {
 	update : async function(id,data) {
         return await defaultModel.update(id,data)
     },
-    upsert : async function(q,data) {
-        return await defaultModel.upsert(q,data)
-    },
 	put : async function(data) {
         return await defaultModel.put(data)
+    },
+    upsert : async function(q,data) {
+        return await defaultModel.upsert(q,data)
     },
     remove : async function(id) {
         return await defaultModel.remove(id)
@@ -32,16 +32,19 @@ module.exports = {
     // ADD CUSTOM FUNCTION BELOW ========================
     // ==================================================
 
-    fetchOneCron : async function() {
+    getProductions : async function() {
 		return new Promise(function(resolve, reject) {
 
-			let query = {assigned:true};
+            let query = {
+                assignments:{$exists: true, $not: {$size: 0}}, 
+                'assignments.items':{$exists: true, $not: {$size: 0}}
+            };
+
+            let fields = { 'fields': { 'name': 0 }}
 			
             conn.getDb()
                 .collection(_table)
-                .find(query)
-                .limit(1)
-				.sort( { "lastCrawled": 1 } )
+                .find(query, fields)
                 .toArray(function(err, result) {
 					
                     if (err) {
