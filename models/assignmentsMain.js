@@ -1,5 +1,5 @@
-let _table = "cp.productions";
-var Model = require('./_model158')
+let _table = "cp.productions.jobs";
+var Model = require('./_model')
 var defaultModel = new Model(_table)
 
 let conn = require('../config/DbConnect');
@@ -19,11 +19,11 @@ module.exports = {
 	update : async function(id,data) {
         return await defaultModel.update(id,data)
     },
-	put : async function(data) {
-        return await defaultModel.put(data)
-    },
     upsert : async function(q,data) {
         return await defaultModel.upsert(q,data)
+    },
+	put : async function(data) {
+        return await defaultModel.put(data)
     },
     remove : async function(id) {
         return await defaultModel.remove(id)
@@ -32,19 +32,16 @@ module.exports = {
     // ADD CUSTOM FUNCTION BELOW ========================
     // ==================================================
 
-    getProductions : async function() {
+    fetchOneCron : async function() {
 		return new Promise(function(resolve, reject) {
 
-            let query = {
-                assignments:{$exists: true, $not: {$size: 0}}, 
-                'assignments.items':{$exists: true, $not: {$size: 0}}
-            };
-
-            let fields = { 'fields': { 'name': 0 }}
+			let query = {assigned:true};
 			
             conn.getDb()
                 .collection(_table)
-                .find(query, fields)
+                .find(query)
+                .limit(1)
+				.sort( { "lastCrawled": 1 } )
                 .toArray(function(err, result) {
 					
                     if (err) {
@@ -58,4 +55,26 @@ module.exports = {
 		});
     },
     
+    fetchLinkedVideo : async function(lessonNo,type) {
+		return new Promise(function(resolve, reject) {
+
+			let query = {jobType: "FAQ/"+lessonNo, type: type};
+			
+            conn.getDb()
+                .collection(_table)
+                .find(query)
+                .limit(1)
+                .toArray(function(err, result) {
+					
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve(result);
+                    }
+
+			});
+
+		});
+    },
+
 }

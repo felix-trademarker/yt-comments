@@ -4,9 +4,9 @@ let rpoAccounts = require('../models/accounts');
 let rpoVideos = require('../models/videos');
 let rpoVideoList = require('../models/videoList');
 let rpoAssignments = require('../models/assignments');
+let rpoAssignmentsMain = require('../models/assignmentsMain');
 let rpoEmailNotifications = require('../models/emailNotification');
 let rpoPostedFaq = require('../models/postedFaq');
-let rpoMainProductions = require('../models/mainProductions');
 
 var {google} = require('googleapis');
 var OAuth2 = google.auth.OAuth2;
@@ -25,181 +25,141 @@ let transporter = nodemailer.createTransport({
 
 exports.addReplyCommentToVideos = async function(countCalled=0) {
 
-  let videos = await rpoVideos.fetchOneCron2()
+  let assignment = (await rpoAssignments.fetchOneCron2())[0]
   let credentials = await helpers.getClientSecret()
+  let flagReply=false;
 
   var clientSecret = credentials.web.client_secret;
   var clientId = credentials.web.client_id;
   var redirectUrl = credentials.web.redirect_uris[0];
   var oauth2Client = new OAuth2(clientId, clientSecret, redirectUrl);
+      // console.log(assignment);
+  // fetch account
+  let accounts = (await rpoAccounts.find(assignment.assignedData))[0]
+  oauth2Client.credentials = accounts;
+  let commentData = {
+    ytId: assignment.youtubeID,
+    ytComment: "",
+  } 
 
-  var flagReply=false;
-  // console.log(videos);
-  for(let i=0; i < videos.length; i++) {
-      
-    // fetch account
-    let accounts = await rpoAccounts.find(videos[i].assignedData)
-    oauth2Client.credentials = accounts[0];
-    let commentData = {
-        ytId: videos[i].youtubeID,
-        ytComment: "",
-    } 
+  // update assignments 1st to avoid infinite loop
+  rpoAssignments.update(assignment._id, {lastCrawledReply: moment().format()})
 
-    // update videos 1st to avoid infinite loop
-    rpoVideos.update(videos[i]._id, {lastCrawledReply3: moment().format()})
+  // check video for comment that doesn't have any reply
+  let comments = await this.getComments(oauth2Client,commentData)
+  // find unreplied comment and check in list
 
-    // check video for comment that doesn't have any reply
-    let comments = await this.getComments(oauth2Client,commentData)
-    // find unreplied comment and check in list
+  // let findComment = await comments.find(c => c.snippet.totalReplyCount > 0);
+  let findComments = await comments.filter(c => c.snippet.totalReplyCount < 1);
 
-    // let findComment = await comments.find(c => c.snippet.totalReplyCount > 0);
-    let findComments = await comments.filter(c => c.snippet.totalReplyCount < 1);
+  if(findComments) {
+    for(let fc=0; fc < findComments.length; fc++){
+      let findComment = findComments[fc]
+      // console.log(findComment);
+      // found
+      console.log("found unreplied comment");
+      let commentSnippet = findComment.snippet.topLevelComment.snippet;
+      let commentAnswer = "";
 
-    if(findComments){
-      for(let fc=0; fc < findComments.length; fc++){
-        let findComment = findComments[fc]
-        // console.log(findComment);
-        // found
-        console.log("found unreplied comment");
-        let commentSnippet = findComment.snippet.topLevelComment.snippet;
-        let commentAnswer = "";
+      console.log("=== fetching youtube ID", assignment.youtubeID);
 
-        console.log("=== fetching youtube ID", videos[i].youtubeID);
-        // find match FAQ in Assignment
-        let findAssignments = await rpoAssignments.findQuery({jobType:"FAQ/"+videos[i].lesson, type:videos[i].type})
-        let findAssignment = findAssignments ? findAssignments[0] : null
-        // console.log(findAssignment);
-        if(findAssignment) { 
+      for(let f=0; f < assignment.items.length; f++) {
+        // console.log("checking >> ", findAssignment.items[f].question);
+        if(true || commentSnippet.textOriginal.includes(assignment.items[f].question)){
+          commentAnswer = assignment.items[f].answer
+          console.log("found match");
 
-          for(let f=0; f < findAssignment.items.length; f++) {
-            // console.log("checking >> ", findAssignment.items[f].question);
-            if(commentSnippet.textOriginal.includes(findAssignment.items[f].question)){
-              commentAnswer = findAssignment.items[f].answer
-              console.log("found match");
-
-              // direct add comment
-              let contentReply = {
-                ytId: findComment.snippet.videoId,
-                ytParentId: findComment.id,
-                ytComment: commentAnswer
-              }
-
-              if (moment().diff(moment(commentSnippet.publishedAt),"minutes") < 12) {
-                console.log("Too early to reply")
-                return;
-              }
-
-              if(true || process.env.ENVIRONMENT !== 'dev'){
-                console.log("adding comment", contentReply.ytComment )
-
-                this.insertReplyComment(oauth2Client, contentReply)
-
-                flagReply = true;
-                // add updates here
-                let postedFaq = await rpoPostedFaq.findQuery({ ytComment: commentSnippet.textOriginal })
-                
-                if(postedFaq && postedFaq.length > 0) {
-
-                  contentReply.puppetMaster = accounts[0]
-                  contentReply.dateCreated = moment().format()
-                  rpoPostedFaq.update(postedFaq[0]._id, { replied: contentReply })
-
-                  contentReply.puppet = postedFaq[0].puppet
-                  
-
-                  // this.ytReplyCommentNotification(contentReply)
-
-                  let this_ = this;
-                  setTimeout(async function(){
-                    
-                    let comments = await this_.getComments(oauth2Client,contentReply)
-                    contentReply.comments = comments
-                    this_.ytReplyCommentNotification(contentReply)
-
-                    // update video record
-                    rpoVideos.update(videos[i]._id, {comments : comments})
-
-                  }, 5000);
-
-                  // UPDATE CP.PRODUCTION RECORD
-                  // let mainProductions = await rpoMainProductions.findQuery({"assignments.ID":findAssignment.ID})
-
-                  // if(mainProductions[0].assignments && mainProductions[0].assignments.length > 0){
-                    
-                  //   let assignmentNDX = mainProductions[0].assignments.findIndex((element) => element.ID == findAssignment.ID)
-                  //   let itemsNDX = mainProductions[0].assignments[assignmentNDX].items.findIndex((element) => element.question == findAssignment.items[f].question)
-                  //   let mainAssignments = mainProductions[0].assignments
-
-                  //   mainAssignments[assignmentNDX].items[itemsNDX].contentReply = contentReply
-                  //   rpoMainProductions.update(mainProductions[0]._id, {assignments: mainAssignments})
-                  // }
-
-                }
-
-                // send reply notification
-                // let replyCommentData = {
-                //   postedFaq : postedFaq[0],
-                //   puppetMaster: accounts[0],
-
-
-                // }
-                
-
-                f=findAssignment.items.length
-                fc=findComments.length
-
-              } else {
-                console.log("disable commenting on development environment");
-              }
-
-            } else {
-              console.log("not found");
-            }
+          // direct add comment
+          let contentReply = {
+            ytId: findComment.snippet.videoId,
+            ytParentId: findComment.id,
+            ytComment: commentAnswer
           }
 
-          if (!commentAnswer) {
-            // send email notification
-            // console.log("send email notification regarding", videos[i].youtubeID, commentSnippet.textOriginal);
-            let dataNotify = {
-              commentSnippet : commentSnippet,
-              youtubeID: videos[i].youtubeID
-            }
+          if (moment().diff(moment(commentSnippet.publishedAt),"minutes") < 12) {
+            console.log("Too early to reply")
+            return;
+          }
 
-            let findNotifyData = {
-              youtubeID:videos[i].youtubeID,
-              commentId:findComment.id
-            }
-            let findNotification = await rpoEmailNotifications.findQuery(findNotifyData)
+          if(process.env.ENVIRONMENT !== 'dev'){
+            console.log("adding comment", contentReply.ytComment )
+            flagReply = true;
+            // return
+            this.insertReplyComment(oauth2Client, contentReply)
+
             
-            // console.log(findNotification);
-            if(findNotification && findNotification.length == 0) {
+            // add updates here
+            let postedFaq = await rpoPostedFaq.findQuery({ ytComment: commentSnippet.textOriginal })
+            
+            if(postedFaq && postedFaq.length > 0) {
+
+              contentReply.puppetMaster = accounts[0]
+              contentReply.dateCreated = moment().format()
+              rpoPostedFaq.update(postedFaq[0]._id, { replied: contentReply })
+
+              contentReply.puppet = postedFaq[0].puppet
               
-              findNotifyData.commentSnippet = commentSnippet
-              rpoEmailNotifications.put(findNotifyData)
 
-              if(process.env.ENVIRONMENT !== 'dev' && moment().diff(moment(commentSnippet.publishedAt),"weeks") < 4){
-                this.ytNotification(dataNotify)
-              }
+              // this.ytReplyCommentNotification(contentReply)
 
-            }
-            // this.ytNotification(dataNotify)
+              let this_ = this;
+              setTimeout(async function(){
+                
+                let comments = await this_.getComments(oauth2Client,contentReply)
+                contentReply.comments = comments
+                this_.ytReplyCommentNotification(contentReply)
+
+                // update video record
+                rpoAssignments.update(assignment._id, {comments : comments})
+
+              }, 5000);
+
+            } // close if posted faq
+
+          } else {
+            console.log("disable commenting on development environment");
           }
 
         } else {
-          console.log("Assignment Items empty");
+          console.log("not found");
         }
-      }
+      
+      } // end for loop
 
-    } else {
-      console.log("All comments already has replies");
-    }
+      if (!commentAnswer) {
+        // send email notification
+        // console.log("send email notification regarding", videos[i].youtubeID, commentSnippet.textOriginal);
+        let dataNotify = {
+          commentSnippet : commentSnippet,
+          youtubeID: assignment.youtubeID
+        }
 
-    // rpoVideos.update(videos[i]._id, {lastCrawledReply3: moment().format()})
-  } // end for loop
+        let findNotifyData = {
+          youtubeID:assignment.youtubeID,
+          commentId:findComment.id
+        }
+        let findNotification = await rpoEmailNotifications.findQuery(findNotifyData)
+        
+        // console.log(findNotification);
+        if(findNotification && findNotification.length == 0) {
+          
+          findNotifyData.commentSnippet = commentSnippet
+          rpoEmailNotifications.put(findNotifyData)
 
+          if(process.env.ENVIRONMENT !== 'dev' && moment().diff(moment(commentSnippet.publishedAt),"weeks") < 4){
+            // this.ytNotification(dataNotify)
+          }
+
+        }
+        // this.ytNotification(dataNotify)
+      } // close not comment answer
+    } // end for loop
+
+  } // findcomments
   // RECALL THIS FUNCTION IF NO FOUND COMMENT
-  // if (countCalled < 5 && !flagReply) this.addReplyCommentToVideos(countCalled+1)
+  if (countCalled < 5 && !flagReply) this.addReplyCommentToVideos(countCalled+1)
  
+  // console.log(countCalled)
 }
 
 // SERVICE FOR COMMENTERS
@@ -207,17 +167,31 @@ exports.addCommentToVideos = async function(req, res, next) {
 
   // check schedule
   if (process.env.daySched != (moment().format('D') % 2)) {
-    return false;
+    // return false;
   }
-  // console.log(moment().format('D') % 2);
 
-  let videos = await rpoVideos.fetchOneCron()
-  let video = videos && videos.length > 0 ? videos[0] : null
+  let assignment = (await rpoAssignments.fetchOneCron())[0]
+  let assignmentData = {
+    lastCrawled: moment().format()
+  }
+  // if simplified fetch from production and update items
+  if (assignment.type == 'simplified' && assignment.items) {
+    // UPDATE ITEMS FROM MAIN
+    console.log(assignment.ID)
+    let assignmentsMain = (await rpoAssignmentsMain.findQuery({ID:assignment.ID}))[0]
+    console.log(assignmentsMain)
+    if (assignmentsMain && assignmentsMain.items) {
+      assignment.items = assignmentsMain.items
+      assignmentData.items = assignment.items
+      console.log("updating assignment", assignment.ID)
+    }
+    
+  }
 
-  console.log('Checking Video',video.youtubeID);
-  // return;
-  // check if it has data fetch
-  if (video) {
+  rpoAssignments.update(assignment._id,assignmentData)
+  console.log("updated assignment", assignment.ID)
+
+  if (assignment) {
     let credentials = await helpers.getClientSecret()
 
     var clientSecret = credentials.web.client_secret;
@@ -225,14 +199,13 @@ exports.addCommentToVideos = async function(req, res, next) {
     var redirectUrl = credentials.web.redirect_uris[0];
     var oauth2Client = new OAuth2(clientId, clientSecret, redirectUrl);
 
-    let accounts = await rpoAccounts.getPuppet()
-
-    // console.log(accounts);
+    let accounts = (await rpoAccounts.getPuppet())[0]
+    oauth2Client.credentials = accounts;
 
     let lastPosted = await rpoPostedFaq.fetchLatest()
-    let puppetPostedToday = await rpoPostedFaq.findQuery({ "puppet.emailAddress": accounts[0].emailAddress, dateCreated: { $gte: moment().format("YYYY-MM-DD") } })
+    let puppetPostedToday = await rpoPostedFaq.findQuery({ "puppet.emailAddress": accounts.emailAddress, dateCreated: { $gte: moment().format("YYYY-MM-DD") } })
     
-    if(accounts && accounts.length < 1){
+    if(!accounts){
       console.log('PUPPET NOT FOUND!!!');
       return;
     }
@@ -247,136 +220,78 @@ exports.addCommentToVideos = async function(req, res, next) {
       return;
     }
 
-    // update record first
-    // rpoAccounts.update(accounts[0]._id, {lastCrawled: moment().format()})
-    rpoVideos.update(video._id, {lastCrawled: moment().format()})
-
-    oauth2Client.credentials = accounts[0];
-
-    // test START
-    // let commentData = {
-    //   ytId: video.youtubeID,
-    //   ytComment: ""
-    // }
-    // let comments = await this.getComments(oauth2Client,commentData)
-    // // for (let i=0; i < comments.length; i++) {
-    // //   if(comments[i].replies)
-    //   console.log(comments);
-    // // }
-    // return;
-    // test END
-
-    // fetch assignment collection to get faq items
-    let assignments = await rpoAssignments.fetchLinkedVideo(video.lesson, video.type)
-
-    if (assignments && assignments.length > 0) {
-      let assignment = assignments[0]
-
-      // if assignment is traditional check if this list is updated
-      if (assignment.type == 'traditional' && typeof assignment.listUpdatedAt == "undefined") {
-        // return 
-        rpoVideos.update(video._id, {lastCrawled: moment().format()})
-        console.log("CANCELLED: Traditional faq needs modification")
-        return;
-      }
-
-      // console.log("BYPASS FILTER",assignment, video);
-
-      // console.log("about to post comment");
-      // return;
-
-      console.log("**** continue *******", assignment.type);
-
-      let postedFaqs = await rpoPostedFaq.findQuery({assignmentId: assignment._id})
-      let faqs = assignment.items
-      let postIdx = postedFaqs.length
-
-      // return false;
-      // console.log("day",moment().format('D') % 2)
-      
-
-      if (postIdx < faqs.length && faqs[postIdx] && faqs[postIdx].question) {
-        // add comment faqs with position index
-        let comment = faqs[postIdx]
-        let commentData = {
-          ytId: video.youtubeID,
-          ytComment: comment.question
-        }
-        console.log("PREPARING COMMENT DATA >>> ",commentData.ytComment);
-        
-        
-        // return false;
-        let commentResponse = await this.insertComment(oauth2Client,commentData)
-
-        // if(process.env.ENVIRONMENT !== 'dev')
-        if (commentResponse && commentResponse.status == 200) {
-          // success posting faq
-          // save to repo and update lastcrawl to each data
-          commentData.assignmentId = assignment._id
-          commentData.puppet = accounts[0]
-          commentData.dateCreated = moment().format()
-          console.log("SUCCESS IN POSTING A COMMENT!!!");
-          // add record 
-          rpoPostedFaq.put(commentData)
-          rpoAccounts.update(accounts[0]._id, {lastCrawled: moment().format()})
-          // rpoVideos.update(video._id, {lastCrawled: moment().format()})
-
-          // SEND EMAIL NOTIFICATION 
-          let dataCommentNotif = {
-            totalNoComment : puppetPostedToday.length,
-            commentData : commentData
-
-          }
-          // this.ytCommentNotification(dataCommentNotif)
-
-          // let commentData = {
-          //   ytId: videos[i].youtubeID,
-          //   ytComment: "",
-          // }
-      
-          // check video for comment that doesn't have any reply
-          
-          let this_ = this;
-          setTimeout(async function(){
-
-            let masterAccounts = await rpoAccounts.getMasterPuppet()
-            oauth2Client.credentials = masterAccounts[0];
-            let comments = await this_.getComments(oauth2Client,commentData)
-            dataCommentNotif.comments = comments
-            this_.ytCommentNotification(dataCommentNotif)
-
-            // update video record
-            rpoVideos.update(video._id, {comments : comments})
-
-          }, 5000);
-
-          // UPDATE CP.PRODUCTION RECORD
-          // let mainProductions = await rpoMainProductions.findQuery({"assignments.ID":assignment.ID})
-
-          // if(mainProductions[0].assignments && mainProductions[0].assignments.length > 0){
-            
-          //   let assignmentNDX = mainProductions[0].assignments.findIndex((element) => element.ID == assignment.ID)
-          //   let itemsNDX = mainProductions[0].assignments[assignmentNDX].items.findIndex((element) => element.question == comment.question)
-          //   let mainAssignments = mainProductions[0].assignments
-
-          //   mainAssignments[assignmentNDX].items[itemsNDX].commentData = commentData
-          //   rpoMainProductions.update(mainProductions[0]._id, {assignments: mainAssignments})
-          // }
-
-        }
-
-      } else {
-        rpoVideos.update(video._id, {lastCrawled: moment().format()})
-        console.log("No FAQ FOUND!");
-      }
-
-
-      // console.log();
-    } else {
-      rpoVideos.update(video._id, {lastCrawled: moment().format()})
-      console.log('no assignment found!, SKIP VIDEO');
+    // if assignment is traditional check if this list is updated
+    if (assignment.type == 'traditional' && typeof assignment.listUpdatedAt == "undefined") {
+      // return 
+      // rpoAssignments.update(assignment._id, {lastCrawled: moment().format()})
+      console.log("CANCELLED: Traditional faq needs modification")
+      return;
     }
 
+    console.log("**** continue *******", assignment.type);
+
+    let faqs = assignment.items
+
+    let commentData = {
+      ytId: assignment.youtubeID,
+      ytComment: ""
+    }
+    let ytComments = await this.getComments(oauth2Client,commentData)
+    let ytCommentsArr= this.getCommentsArr(ytComments)
+    
+    // FIND FAQ's
+    for(let c=0; c < faqs.length; c++) {
+      if (!ytCommentsArr.includes(faqs[c].question)) {
+        commentData.ytComment = faqs[c].question
+        // console.log("found FAQ",findFaq)
+        break;
+      }
+    }
+    
+    console.log("for FAQ comment", commentData.ytComment)
+
+    if ( commentData.ytComment && process.env.ENVIRONMENT !== 'dev') {
+      // console.log("to comment", commentData)
+      // return 
+
+      let commentResponse = await this.insertComment(oauth2Client,commentData)
+
+      if (commentResponse && commentResponse.status == 200) {
+        // success posting faq
+        // save to repo and update lastcrawl to each data
+        commentData.assignmentId = assignment._id
+        commentData.puppet = accounts
+        commentData.dateCreated = moment().format()
+        console.log("SUCCESS IN POSTING A COMMENT!!!");
+        // add record 
+        rpoPostedFaq.put(commentData)
+        rpoAccounts.update(accounts._id, {lastCrawled: moment().format()})
+        // rpoVideos.update(video._id, {lastCrawled: moment().format()})
+
+        // SEND EMAIL NOTIFICATION 
+        let dataCommentNotif = {
+          totalNoComment : puppetPostedToday.length,
+          commentData : commentData
+
+        }
+        
+        let this_ = this;
+        setTimeout(async function(){
+
+          let masterAccounts = await rpoAccounts.getMasterPuppet()
+          oauth2Client.credentials = masterAccounts[0];
+          let comments = await this_.getComments(oauth2Client,commentData)
+          dataCommentNotif.comments = comments
+          this_.ytCommentNotification(dataCommentNotif)
+
+        }, 5000);
+
+      }
+
+    } else {
+      // rpoVideos.update(video._id, {lastCrawled: moment().format()})
+      console.log("No FAQ FOUND!");
+    }
 
   } // close if has data fetch
   else {
@@ -391,7 +306,7 @@ exports.insertComment = async function(auth, content) {
   return new Promise(function(resolve, reject) {
 
     var service = google.youtube('v3');
-  
+    // console.log(auth)
     service.commentThreads.insert({
       auth: auth,
       part: ["snippet"],
@@ -440,16 +355,21 @@ exports.insertReplyComment = async function(auth, content) {
 
 exports.getComments = async function(auth, content) {
 
+  // console.log(auth, content)
+
   return new Promise(function(resolve, reject) {
 
     var service = google.youtube('v3');
-  
+    
+    try {
+
+    
 
     service.commentThreads.list({
         auth: auth,
-        part: 'snippet,replies',
+        part: ['snippet,replies'],
         videoId: content.ytId,
-        maxResults: 50,
+        maxResults: 100,
     }, function(err, response) {
       if (err) {
         console.log('The API returned an error: ' + err);
@@ -464,7 +384,21 @@ exports.getComments = async function(auth, content) {
       // }
       resolve(response.data.items)
     });
+
+    } catch (ex) {
+      console.log(ex)
+    }
   });
+}
+
+exports.getCommentsArr = function(comments) {
+
+  let commentsArr=[]
+  for (let c=0; c < comments.length; c++) {
+    commentsArr.push(comments[c].snippet.topLevelComment.snippet.textOriginal)
+  }
+
+  return commentsArr
 }
 
 exports.getGmailProfile = async function(auth) {

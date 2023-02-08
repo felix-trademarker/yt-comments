@@ -7,7 +7,7 @@ let rpoAssignments = require('../models/assignments');
 let rpoEmailNotifications = require('../models/emailNotification');
 let rpoPostedFaq = require('../models/postedFaq');
 let rpoMainProductions = require('../models/mainProductions');
-let rpoMainProductions158 = require('../models/mainProductions158');
+// let rpoMainProductions158 = require('../models/mainProductions158');
 
 var {google} = require('googleapis');
 var OAuth2 = google.auth.OAuth2;
@@ -26,6 +26,7 @@ exports.updateData = async function() {
 
 // ADD OR UPDATE ASSIGNMENT COLLECTION BASED ON MONGO158 PRODUCTIONS
 exports.upsertAssignment = async function() {
+  return;
   // fetch main productions
   let productions = await rpoMainProductions158.getProductions()
 

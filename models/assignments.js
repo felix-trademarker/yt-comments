@@ -1,4 +1,4 @@
-let _table = "yt.comments.assignments";
+let _table = process.env.TBLEXT+"assignments";
 var Model = require('./_model')
 var defaultModel = new Model(_table)
 
@@ -42,6 +42,29 @@ module.exports = {
                 .find(query)
                 .limit(1)
 				.sort( { "lastCrawled": 1 } )
+                .toArray(function(err, result) {
+					
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve(result);
+                    }
+
+			});
+
+		});
+    },
+
+    fetchOneCron2 : async function() {
+		return new Promise(function(resolve, reject) {
+
+			let query = {comments:{$exists:true}};
+			
+            conn.getDb()
+                .collection(_table)
+                .find()
+                .limit(1)
+				.sort( { "lastCrawledReply": 1 } )
                 .toArray(function(err, result) {
 					
                     if (err) {

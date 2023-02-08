@@ -7,7 +7,7 @@ let gmailService = require('../services/gmailApiService')
 let rpoAccounts = require('../models/accounts')
 let rpoVideos = require('../models/videos')
 let rpoVideoList = require('../models/videoList')
-let rpoProductions = require('../models/productions')
+// let rpoProductions = require('../models/productions')
 let rpoAssignments = require('../models/assignments')
 
 let rpoMainProductions = require('../models/mainProductions');
@@ -85,20 +85,19 @@ exports.index = async function(req, res, next) {
                 // fetch cp.production
 
                 // assign video  
-                let productionAssignments = await rpoProductions.fetchOneAssign()
-                let productionAssignment;
-                let video;
+                // COMMENT OUT STILL TO DO FOR NEW DESIGN
+                // let productionAssignments = await rpoProductions.fetchOneAssign()
+                // let productionAssignment;
+                // let video;
 
-                // console.log(productionAssignments);
-                // console.log(videos)
-                if (productionAssignments && productionAssignments.length > 0){
-                    productionAssignment = productionAssignments[0]
+                // if (productionAssignments && productionAssignments.length > 0){
+                //     productionAssignment = productionAssignments[0]
 
-                    rpoProductions.update(productionAssignment._id, {assignedGmailAccount:true, assignedGmailAccountTo:data.displayName})
+                //     rpoProductions.update(productionAssignment._id, {assignedGmailAccount:true, assignedGmailAccountTo:data.displayName})
 
-                    data.assignments = productionAssignment.assignments
-                    // data.video = video
-                }
+                //     data.assignments = productionAssignment.assignments
+    
+                // }
 
                 
 

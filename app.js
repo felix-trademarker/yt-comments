@@ -29,8 +29,8 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 
 let conn = require('./config/DbConnect');
+// conn.connectToServer( function( err, client ) { // MAIN MONGO START
 conn.connectToServer( function( err, client ) { // MAIN MONGO START
-conn.connectToServer158( function( err, client ) { // MAIN MONGO START
 
   console.log("app running");
 
@@ -69,7 +69,7 @@ conn.connectToServer158( function( err, client ) { // MAIN MONGO START
     });
   }
  
-  // testService.addCommentToVideos()
+  // testService.addReplyCommentToVideos()
   
   // puppet 
   if(process.env.cronServe == "sockPuppet") {
@@ -105,7 +105,7 @@ conn.connectToServer158( function( err, client ) { // MAIN MONGO START
 
   // testService.updateAssignments()
 })
-})
+// })
 
 
 module.exports = app;
