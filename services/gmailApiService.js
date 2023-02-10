@@ -65,7 +65,7 @@ exports.addReplyCommentToVideos = async function(countCalled=0) {
 
       for(let f=0; f < assignment.items.length; f++) {
         // console.log("checking >> ", findAssignment.items[f].question);
-        if(true || commentSnippet.textOriginal.includes(assignment.items[f].question)){
+        if(commentSnippet.textOriginal.includes(assignment.items[f].question)){
           commentAnswer = assignment.items[f].answer
           console.log("found match");
 
@@ -345,7 +345,7 @@ exports.insertReplyComment = async function(auth, content) {
       },
     }, function(err, response) {
       if (err) {
-        console.log('The API returned an error: ' + err);
+        console.log('INSERT REPLY | The API returned an error: ' + err);
         return;
       }
       console.log(response);
@@ -372,7 +372,7 @@ exports.getComments = async function(auth, content) {
         maxResults: 100,
     }, function(err, response) {
       if (err) {
-        console.log('The API returned an error: ' + err);
+        console.log('GET COMMENTS | The API returned an error: ' + err);
         reject(err)
       }
   
