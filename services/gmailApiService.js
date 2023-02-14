@@ -93,7 +93,7 @@ exports.addReplyCommentToVideos = async function(countCalled=0) {
             
             if(postedFaq && postedFaq.length > 0) {
 
-              contentReply.puppetMaster = accounts[0]
+              contentReply.puppetMaster = accounts
               contentReply.dateCreated = moment().format()
               rpoPostedFaq.update(postedFaq[0]._id, { replied: contentReply })
 
