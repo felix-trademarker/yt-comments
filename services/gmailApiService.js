@@ -508,10 +508,10 @@ exports.ytReplyCommentNotification = async function(data) {
   to: "yt@chinesepod.com",
   cc: ["carissa@chinesepod.com", "felix@bigfoot.com", "rexy@bigfoot.com", "rebecca@chinesepod.com"],
   // to: "felix@bigfoot.com",
-  subject: data.puppetMaster.displayName + " replied to a comment in Youtube ID " + data.ytId + " at " +moment().format('MMMM Do YYYY, h:mm:ss a'), 
+  subject: (data.puppetMaster.displayName ? data.puppetMaster.displayName : 'Puppet Master') + " replied to a comment in Youtube ID " + data.ytId + " at " +moment().format('MMMM Do YYYY, h:mm:ss a'), 
   html: `<p>Hi Admin,</p>
-          <p>Puppet Master: ${data.puppetMaster.displayName}
-          <br>Sock Puppet: ${data.puppet.displayName}
+          <p>Puppet Master: ${(data.puppetMaster.displayName ? data.puppetMaster.displayName : 'Puppet Master')}
+          <br>Sock Puppet: ${(data.puppet.displayName ? data.puppet.displayName : 'Sock Master')}
           <br>Youtube Link: https://www.youtube.com/watch?v=${data.ytId}
           <br>Reply Comment: ${data.ytComment}
           </p>
