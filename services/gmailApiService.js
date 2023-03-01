@@ -35,7 +35,11 @@ exports.addReplyCommentToVideos = async function(countCalled=0) {
   var oauth2Client = new OAuth2(clientId, clientSecret, redirectUrl);
       // console.log(assignment);
   // fetch account
-  let accounts = (await rpoAccounts.find(assignment.assignedData))[0]
+  // let accounts = (await rpoAccounts.find(assignment.assignedData))[0]
+  // temporary since becky account has exceeded quota
+  let accounts = (await rpoAccounts.find('62b586e74584ea0cb1243831'))[0]
+  // console.log(accounts);
+  // return;
   oauth2Client.credentials = accounts;
   let commentData = {
     ytId: assignment.youtubeID,
@@ -184,12 +188,13 @@ exports.addCommentToVideos = async function(req, res, next) {
       assignment.items = assignmentsMain.items
       assignmentData.items = assignment.items
       console.log("updating assignment", assignment.ID)
+
+      rpoAssignments.update(assignment._id,assignmentData)
     }
     
   }
 
-  rpoAssignments.update(assignment._id,assignmentData)
-  console.log("updated assignment", assignment.ID)
+  
 
   if (assignment) {
     let credentials = await helpers.getClientSecret()
