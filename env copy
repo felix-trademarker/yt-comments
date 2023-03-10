@@ -1,0 +1,33 @@
+PORT=3000
+
+#MongoURL=mongodb://localhost:27017/bigfoot
+MongoURL=mongodb://felix:blueCAPcoldDENT@mongo95.bigfoot.com
+
+MongoURL158=mongodb://felix:blueCAPcoldDENT@dev158.bigfoot.com:27017
+
+googleApiReturnURL=http://localhost:3000/
+googleApiReturnURLCommenter=http://localhost:3000/commenter
+
+TBLEXT=yt.faq.
+ENVIRONMENT=dev
+
+MAIL_USERNAME=beta@chinesepod.com
+MAIL_PASSWORD=bigfoot1234!
+MAIL_FROM="ChinesePod Team <beta@chinesepod.com>"
+
+MAIL_PARSER_USERNAME=yt@chinesepod.com
+MAIL_PARSER_PASSWORD=cpod13579
+
+puppet=felix@bigfoot.com
+#puppet2=bigfoot@gmail.com
+cronServe=sockPuppet
+#cronServe=dataUpdater
+
+jobSchedulePuppet="0 */13 10-15 * * *"
+
+#cronServe=sockPuppet
+
+#jobScheduleTester2=="0 */1 10-15 * * *"
+
+VIDTYPE=traditional
+daySched=0
