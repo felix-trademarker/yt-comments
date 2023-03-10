@@ -70,7 +70,8 @@ exports.getComments = async function(vidId) {
                 let ytData = {
                     text: c.text, 
                     numReplies: c.numReplies,
-                    vidId: vidId
+                    vidId: vidId,
+                    commentId: c.commentId
                 }
                 arrComments.push(ytData)
 
