@@ -42,7 +42,7 @@ conn.connectToServer( function( err, client ) { // MAIN MONGO START
   app.use('/', publicRouter);
 
   // test for CRON
-  updaterService.updateAssignmentData()
+  // updaterService.updateAssignmentData()
   
   // sockpuppet | master puppet
   // cron.schedule('0 */6 * * * *', () => {
@@ -62,7 +62,8 @@ conn.connectToServer( function( err, client ) { // MAIN MONGO START
 
     cron.schedule('0 0 1 * * *', () => {
       console.log("==== UPDATE ASSIGNMENTS FROM MAIN COLLECTION ====");
-      updaterService.upsertAssignment()
+      // updaterService.upsertAssignment()
+      updaterService.updateAssignmentData()
     }, {
       scheduled: true,
       timezone: "America/New_York"

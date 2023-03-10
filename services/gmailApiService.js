@@ -7,6 +7,7 @@ let rpoAssignments = require('../models/assignments');
 let rpoAssignmentsMain = require('../models/assignmentsMain');
 let rpoEmailNotifications = require('../models/emailNotification');
 let rpoPostedFaq = require('../models/postedFaq');
+let rpoComments = require('../models/postedFaq');
 
 var {google} = require('googleapis');
 var OAuth2 = google.auth.OAuth2;
@@ -50,40 +51,41 @@ exports.addReplyCommentToVideos = async function(countCalled=0) {
   rpoAssignments.update(assignment._id, {lastCrawledReply: moment().format()})
 
   // check video for comment that doesn't have any reply
-  let comments = await this.getComments(oauth2Client,commentData)
+  // let comments = await this.getComments(oauth2Client,commentData)
+  let comments = await helpers.getComments(assignment.youtubeID)
   // find unreplied comment and check in list
 
   // let findComment = await comments.find(c => c.snippet.totalReplyCount > 0);
-  let findComments = await comments.filter(c => c.snippet.totalReplyCount < 1);
+  let findComments = await comments.filter(c => c.numReplies < 1);
 
   if(findComments) {
     for(let fc=0; fc < findComments.length; fc++){
       let findComment = findComments[fc]
       // console.log(findComment);
       // found
-      console.log("found unreplied comment");
-      let commentSnippet = findComment.snippet.topLevelComment.snippet;
+      console.log("found unreplied comment",findComment.text);
+      let commentSnippet = findComment.text;
       let commentAnswer = "";
 
       console.log("=== fetching youtube ID", assignment.youtubeID);
 
       for(let f=0; f < assignment.items.length; f++) {
         // console.log("checking >> ", findAssignment.items[f].question);
-        if(commentSnippet.textOriginal.includes(assignment.items[f].question)){
+        if(commentSnippet.includes(assignment.items[f].question)){
           commentAnswer = assignment.items[f].answer
           console.log("found match");
 
           // direct add comment
           let contentReply = {
-            ytId: findComment.snippet.videoId,
-            ytParentId: findComment.id,
+            ytId: assignment.youtubeID,
+            ytParentId: findComment.commentId,
             ytComment: commentAnswer
           }
 
-          if (moment().diff(moment(commentSnippet.publishedAt),"minutes") < 12) {
-            console.log("Too early to reply")
-            return;
-          }
+          // if (moment().diff(moment(commentSnippet.publishedAt),"minutes") < 12) {
+          //   console.log("Too early to reply")
+          //   return;
+          // }
 
           if(process.env.ENVIRONMENT !== 'dev'){
             console.log("adding comment", contentReply.ytComment )
@@ -93,7 +95,7 @@ exports.addReplyCommentToVideos = async function(countCalled=0) {
 
             
             // add updates here
-            let postedFaq = await rpoPostedFaq.findQuery({ ytComment: commentSnippet.textOriginal })
+            let postedFaq = await rpoPostedFaq.findQuery({ ytComment: commentSnippet })
             
             if(postedFaq && postedFaq.length > 0) {
 
@@ -140,7 +142,7 @@ exports.addReplyCommentToVideos = async function(countCalled=0) {
 
         let findNotifyData = {
           youtubeID:assignment.youtubeID,
-          commentId:findComment.id
+          commentId:findComment.commentId
         }
         let findNotification = await rpoEmailNotifications.findQuery(findNotifyData)
         
@@ -241,17 +243,20 @@ exports.addCommentToVideos = async function(req, res, next) {
       ytId: assignment.youtubeID,
       ytComment: ""
     }
-    let ytComments = await this.getComments(oauth2Client,commentData)
-    let ytCommentsArr= this.getCommentsArr(ytComments)
+    // let ytComments = await this.getComments(oauth2Client,commentData)
+    // let ytCommentsArr= this.getCommentsArr(ytComments)
+    let ytCommentsArr= await helpers.getComments(assignment.youtubeID)
     
     // FIND FAQ's
     for(let c=0; c < faqs.length; c++) {
-      if (!ytCommentsArr.includes(faqs[c].question)) {
+      let resComment = ytCommentsArr.find(({ text }) => text === faqs[c].question);
+      if (!resComment) {
         commentData.ytComment = faqs[c].question
         // console.log("found FAQ",findFaq)
         break;
       }
     }
+    
     
     console.log("for FAQ comment", commentData.ytComment)
 
