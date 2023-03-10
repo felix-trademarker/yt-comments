@@ -270,112 +270,22 @@ exports.updateAssignments = async function() {
 // ADD IDENTIFIER IF THERE IS STILL FAQ TO BE ADDED IN YT
 exports.updateAssignmentData = async function() {
 
-  const ytcm = require("@freetube/yt-comment-scraper")
-
-  const payload = {
-    videoId: 'OjIgavNBCkI'
-  }
-  
-  ytcm.getComments(payload).then((data) =>{
-      console.log(data.comments);
-  }).catch((error)=>{
-      console.log(error);
-  });
-
-  return;
-  console.log(">>>>>fetching records<<<<<");
-  let assignments = await rpoAssignments.get();
-  let credentials = await helpers.getClientSecretv2()
-
-  var clientSecret = credentials.web.client_secret;
-  var clientId = credentials.web.client_id;
-  var redirectUrl = credentials.web.redirect_uris[0];
-  var oauth2Client = new OAuth2(clientId, clientSecret, redirectUrl);
-
-  let accounts = (await rpoAccounts.find('63dc7a8038238903625787a8'))[0]
-  oauth2Client.credentials = accounts;
-
-//   const videoId = 'h_tkIpwbsxY'
- 
-// fetchCommentPage(videoId)
-//   .then(commentPage => {
-//     console.log("1",commentPage.comments)
-//     return fetchCommentPage(videoId, commentPage.nextPageToken)
-//   })
-//   .then(commentPage => {
-//     console.log("2",commentPage.comments)
-//   })
-
-//   return;
-
+  // let assignments = await rpoAssignments.get()
+  let assignments = await rpoAssignments.getSelected([{ $project : { youtubeID : 1 } }])
+  console.log(assignments)
+  // return;
   for (let i=0; i < assignments.length; i++) {
     let assignment = assignments[i]
-    if (assignment && assignment.items.length > 0){
-      
-      let commentData = {
-        ytId: assignment.youtubeID,
-        ytComment: ""
-      }
-      let ytComments = await this.getComments(oauth2Client,commentData)
-      let ytCommentsArr= this.getCommentsArr(ytComments)
-      
-      let faqs = assignment.items
-      let hasUncomment = false;
-      // FIND FAQ's
-      for(let c=0; c < faqs.length; c++) {
-        if (!ytCommentsArr.includes(faqs[c].question)) {
-          hasUncomment = true;
-          break;
-        }
-      }
 
+    console.log("CHECKING >>> ", assignment.youtubeID);
+    let ytCommentsArr = await helpers.getComments(assignment.youtubeID)
       // update assignment and mark has uncomment
       let assignData = {
-        comments : ytCommentsArr,
-        hasUncomment : hasUncomment
+        comments : ytCommentsArr
       }
       console.log("updating", assignData);
       rpoAssignments.update(assignment._id, assignData)
-
-    }
-  }
-}
-
-exports.getComments = async function(auth, content) {
-
-  return new Promise(function(resolve, reject) {
-
-    var service = google.youtube('v3');
-    
-    try {
-
-      service.commentThreads.list({
-          auth: auth,
-          part: ['snippet,replies'],
-          videoId: content.ytId,
-          maxResults: 100,
-      }, function(err, response) {
-        if (err) {
-          console.log('GET COMMENTS | The API returned an error: ' + err);
-          reject(err)
-        }
-
-        resolve(response.data.items)
-      });
-
-    } catch (ex) {
-      console.log(ex)
-    }
-  });
-}
-
-exports.getCommentsArr = function(comments) {
-
-  let commentsArr=[]
-  for (let c=0; c < comments.length; c++) {
-    commentsArr.push(comments[c].snippet.topLevelComment.snippet.textOriginal)
   }
 
-  return commentsArr
+  console.log(">>>>DONE<<<<");
 }
-

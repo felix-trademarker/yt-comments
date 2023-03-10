@@ -32,6 +32,27 @@ module.exports = {
     // ADD CUSTOM FUNCTION BELOW ========================
     // ==================================================
 
+    getSelected : async function(aggregate=[]) {
+		return new Promise(function(resolve, reject) {
+
+
+			
+            conn.getDb()
+                .collection(_table)
+                .aggregate(aggregate)
+                .toArray(function(err, result) {
+					
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve(result);
+                    }
+
+			});
+
+		});
+    },
+
     fetchOneCron : async function() {
 		return new Promise(function(resolve, reject) {
 
