@@ -170,9 +170,9 @@ exports.addReplyCommentToVideos = async function(countCalled=0) {
 exports.addCommentToVideos = async function(req, res, next) {
 
   // check schedule
-  if (process.env.daySched != (moment().format('D') % 2)) {
+  // if (process.env.daySched != (moment().format('D') % 2)) {
     // return false;
-  }
+  // }
 
   let assignment = (await rpoAssignments.fetchOneCron())[0]
   let assignmentData = {

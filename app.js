@@ -42,7 +42,7 @@ conn.connectToServer( function( err, client ) { // MAIN MONGO START
   app.use('/', publicRouter);
 
   // test for CRON
-  // updaterService.upsertAssignment()
+  updaterService.updateAssignmentData()
   
   // sockpuppet | master puppet
   // cron.schedule('0 */6 * * * *', () => {

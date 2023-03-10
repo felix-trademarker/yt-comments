@@ -14,6 +14,19 @@ exports.getClientSecret = async function() {
 
 }
 
+exports.getClientSecretv2 = async function() {
+    
+    return new Promise(function(resolve, reject) {
+        fs.readFile('client_secretv2.json', function processClientSecrets(err, content) {
+
+            if (err) reject(err)
+            
+            resolve(JSON.parse(content))
+        });
+    });
+
+}
+
 exports.getPuppetEnv = function() {
     
     let todaysDate = moment();

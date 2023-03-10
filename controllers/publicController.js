@@ -102,106 +102,106 @@ exports.index = async function(req, res, next) {
                 
 
                 // add video list
-                if(productionAssignment && productionAssignment.assignments)
-                for (let ls=0; ls < productionAssignment.assignments.length; ls++) {
-                    // save in video list
-                    let assignedData = productionAssignment.assignments[ls]
-                    let lessonId = assignedData.jobType.split("/")[1]
+                // if(productionAssignment && productionAssignment.assignments)
+                // for (let ls=0; ls < productionAssignment.assignments.length; ls++) {
+                //     // save in video list
+                //     let assignedData = productionAssignment.assignments[ls]
+                //     let lessonId = assignedData.jobType.split("/")[1]
 
-                    let videoList = await rpoVideoList.findQuery({lesson:lessonId})
-
-                    
+                //     let videoList = await rpoVideoList.findQuery({lesson:lessonId})
 
                     
-                    if(productionAssignment.assignments[ls].items && productionAssignment.assignments[ls].items.length){
-                        let assignment = productionAssignment.assignments[ls]
 
-                        assignment.lesson = lessonId,
-                        assignment.youtubeID = videoList ? videoList[0].youtubeID : null,
-                        assignment.assigned = true,
-                        assignment.type = 'simplified',
-                        assignment.assignedData = data._id,
-                        assignment.lastCrawled = moment().format()
+                    
+                //     if(productionAssignment.assignments[ls].items && productionAssignment.assignments[ls].items.length){
+                //         let assignment = productionAssignment.assignments[ls]
+
+                //         assignment.lesson = lessonId,
+                //         assignment.youtubeID = videoList ? videoList[0].youtubeID : null,
+                //         assignment.assigned = true,
+                //         assignment.type = 'simplified',
+                //         assignment.assignedData = data._id,
+                //         assignment.lastCrawled = moment().format()
                         
-                        rpoAssignments.put(assignment)
+                //         rpoAssignments.put(assignment)
 
-                        let videoData = {
-                            lesson: lessonId,
-                            youtubeID: videoList ? videoList[0].youtubeID : null,
-                            assigned: true,
-                            type: 'simplified',
-                            assignedData: data._id,
-                            lastCrawled: moment().format()
-                        }
+                //         let videoData = {
+                //             lesson: lessonId,
+                //             youtubeID: videoList ? videoList[0].youtubeID : null,
+                //             assigned: true,
+                //             type: 'simplified',
+                //             assignedData: data._id,
+                //             lastCrawled: moment().format()
+                //         }
 
-                        rpoVideos.put(videoData)
+                //         rpoVideos.put(videoData)
 
-                        if (videoList && videoList[0].youtubeIDtrad) {
+                //         if (videoList && videoList[0].youtubeIDtrad) {
 
-                            let videoDataTrad = {
-                                lesson: lessonId,
-                                youtubeID: videoList ? videoList[0].youtubeIDtrad : null,
-                                assigned: true,
-                                type: 'traditional',
-                                assignedData: data._id,
-                                lastCrawled: moment().format()
-                            }
+                //             let videoDataTrad = {
+                //                 lesson: lessonId,
+                //                 youtubeID: videoList ? videoList[0].youtubeIDtrad : null,
+                //                 assigned: true,
+                //                 type: 'traditional',
+                //                 assignedData: data._id,
+                //                 lastCrawled: moment().format()
+                //             }
                             
-                            rpoVideos.put(videoDataTrad)
+                //             rpoVideos.put(videoDataTrad)
                             
-                            let assignmentTrad = productionAssignment.assignments[ls]
-                            // let assignment = productionAssignment.assignments[ls]
+                //             let assignmentTrad = productionAssignment.assignments[ls]
+                //             // let assignment = productionAssignment.assignments[ls]
 
-                            // replace simplified characters to traditional
-                            let items = [];
-                            if(assignmentTrad.items)
-                            for(let i=0; i < assignmentTrad.items.length; i++ ) { let item = assignmentTrad.items[i]
-                                // replace all simplified to traditional QUESTIONS
-                                for (let q=0; q < item.question.length; q++) {
-                                    let lookup;
+                //             // replace simplified characters to traditional
+                //             let items = [];
+                //             if(assignmentTrad.items)
+                //             for(let i=0; i < assignmentTrad.items.length; i++ ) { let item = assignmentTrad.items[i]
+                //                 // replace all simplified to traditional QUESTIONS
+                //                 for (let q=0; q < item.question.length; q++) {
+                //                     let lookup;
 
-                                    if (hanzi.ifComponentExists(item.question[q]))
-                                    lookup = hanzi.definitionLookup(item.question[q])
+                //                     if (hanzi.ifComponentExists(item.question[q]))
+                //                     lookup = hanzi.definitionLookup(item.question[q])
 
-                                    if (lookup && lookup.length > 0) {
-                                        let qChar = lookup[0].traditional
-                                        item.question.replace(item.question[q], qChar)
-                                    }
+                //                     if (lookup && lookup.length > 0) {
+                //                         let qChar = lookup[0].traditional
+                //                         item.question.replace(item.question[q], qChar)
+                //                     }
 
-                                }
+                //                 }
 
-                                // replace all simplified to traditional ANSWER
-                                for (let a=0; a < item.answer.length; a++) {
-                                    let lookup;
+                //                 // replace all simplified to traditional ANSWER
+                //                 for (let a=0; a < item.answer.length; a++) {
+                //                     let lookup;
 
-                                    if (hanzi.ifComponentExists(item.answer[a]))
-                                    lookup = hanzi.definitionLookup(item.answer[a])
+                //                     if (hanzi.ifComponentExists(item.answer[a]))
+                //                     lookup = hanzi.definitionLookup(item.answer[a])
 
-                                    if (lookup && lookup.length > 0) {
-                                        let qChar = lookup[0].traditional
-                                        item.answer.replace(item.answer[a], qChar)
-                                    }
+                //                     if (lookup && lookup.length > 0) {
+                //                         let qChar = lookup[0].traditional
+                //                         item.answer.replace(item.answer[a], qChar)
+                //                     }
 
-                                }
+                //                 }
 
-                                items.push(item)
-                            }
+                //                 items.push(item)
+                //             }
 
-                            assignmentTrad.items = items
+                //             assignmentTrad.items = items
 
-                            assignmentTrad.lesson = lessonId,
-                            assignmentTrad.youtubeID = videoList ? videoList[0].youtubeIDtrad : null,
-                            assignmentTrad.assigned = true,
-                            assignmentTrad.type = 'traditional',
-                            assignmentTrad.assignedData = data._id,
-                            assignmentTrad.lastCrawled = moment().format()
+                //             assignmentTrad.lesson = lessonId,
+                //             assignmentTrad.youtubeID = videoList ? videoList[0].youtubeIDtrad : null,
+                //             assignmentTrad.assigned = true,
+                //             assignmentTrad.type = 'traditional',
+                //             assignmentTrad.assignedData = data._id,
+                //             assignmentTrad.lastCrawled = moment().format()
                             
-                            rpoAssignments.put(assignmentTrad)
-                        }
-                    }
+                //             rpoAssignments.put(assignmentTrad)
+                //         }
+                //     }
 
-                    // ls = productionAssignment.assignments.length
-                }
+                //     // ls = productionAssignment.assignments.length
+                // }
             }
             
 
