@@ -61,7 +61,7 @@ module.exports = {
 			
             conn.getDb()
                 .collection(_table)
-                .find()
+                .find(query)
                 .limit(1)
 				.sort( { "lastCrawled": 1 } )
                 .toArray(function(err, result) {
