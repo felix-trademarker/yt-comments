@@ -163,7 +163,9 @@ exports.addReplyCommentToVideos = async function(countCalled=0) {
 
   } // findcomments
   // RECALL THIS FUNCTION IF NO FOUND COMMENT
-  if (countCalled < 5 && !flagReply) this.addReplyCommentToVideos(countCalled+1)
+  if (countCalled < 5 && !flagReply) {
+    this.addReplyCommentToVideos(countCalled+1)
+  }
  
   // console.log(countCalled)
 }
@@ -308,6 +310,13 @@ exports.addCommentToVideos = async function(counter=1) {
         rpoPostedFaq.put(commentData)
         rpoAccounts.update(accounts._id, {lastCrawled: moment().format()})
         // rpoVideos.update(video._id, {lastCrawled: moment().format()})
+
+        // update comment repository
+        rpoComments.put({
+          text: commentData.ytComment,
+          vidId: commentData.ytId,
+          numReplies: 0
+        });
 
         // SEND EMAIL NOTIFICATION 
         let dataCommentNotif = {
