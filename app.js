@@ -69,7 +69,7 @@ conn.connectToServer( function( err, client ) { // MAIN MONGO START
       timezone: "America/New_York"
     });
   }
- 
+  // testService.addCommentToVideos()
   // testService.addReplyCommentToVideos()
   
   // puppet 

@@ -7,7 +7,7 @@ let rpoAssignments = require('../models/assignments');
 let rpoAssignmentsMain = require('../models/assignmentsMain');
 let rpoEmailNotifications = require('../models/emailNotification');
 let rpoPostedFaq = require('../models/postedFaq');
-let rpoComments = require('../models/postedFaq');
+let rpoComments = require('../models/comments');
 
 var {google} = require('googleapis');
 var OAuth2 = google.auth.OAuth2;
@@ -169,23 +169,33 @@ exports.addReplyCommentToVideos = async function(countCalled=0) {
 }
 
 // SERVICE FOR COMMENTERS
-exports.addCommentToVideos = async function(req, res, next) {
+exports.addCommentToVideos = async function(counter=1) {
 
   // check schedule
   // if (process.env.daySched != (moment().format('D') % 2)) {
     // return false;
   // }
 
+  // end if counter > 400
+  if (counter > 400) {
+    return;
+  }
+
+  console.log("function called ", counter);
+
   let assignment = (await rpoAssignments.fetchOneCron())[0]
   let assignmentData = {
-    lastCrawled: moment().format()
+    lastCrawled: moment().format(),
   }
+
+  rpoAssignments.update(assignment._id,assignmentData)
+
   // if simplified fetch from production and update items
-  if (assignment.type == 'simplified' && assignment.items) {
+  if (assignment.type == 'simplified' && assignment.items ) {
     // UPDATE ITEMS FROM MAIN
     console.log(assignment.ID)
     let assignmentsMain = (await rpoAssignmentsMain.findQuery({ID:assignment.ID}))[0]
-    console.log(assignmentsMain)
+    // console.log(assignmentsMain)
     if (assignmentsMain && assignmentsMain.items) {
       assignment.items = assignmentsMain.items
       assignmentData.items = assignment.items
@@ -195,6 +205,8 @@ exports.addCommentToVideos = async function(req, res, next) {
     }
     
   }
+
+  
 
   
 
@@ -232,6 +244,7 @@ exports.addCommentToVideos = async function(req, res, next) {
       // return 
       // rpoAssignments.update(assignment._id, {lastCrawled: moment().format()})
       console.log("CANCELLED: Traditional faq needs modification")
+      // this.addCommentToVideos(counter+1)
       return;
     }
 
@@ -245,24 +258,42 @@ exports.addCommentToVideos = async function(req, res, next) {
     }
     // let ytComments = await this.getComments(oauth2Client,commentData)
     // let ytCommentsArr= this.getCommentsArr(ytComments)
-    let ytCommentsArr= await helpers.getComments(assignment.youtubeID)
+    // let ytCommentsArr= await helpers.getComments(assignment.youtubeID)
     
     // FIND FAQ's
+    console.log("faq length", faqs.length)
+    console.log("faq",assignment.youtubeID ,faqs)
     for(let c=0; c < faqs.length; c++) {
-      let resComment = ytCommentsArr.find(({ text }) => text === faqs[c].question);
+      // let resComment = ytCommentsArr.find(({ text }) => text === faqs[c].question);
+      // if (!resComment) {
+      //   commentData.ytComment = faqs[c].question
+      //   break;
+      // }
+      console.log("checking", faqs[c].question);
+      // find faq in mongo
+      let resComment = (await rpoComments.findQuery({vidId:assignment.youtubeID, text:faqs[c].question}))[0]
       if (!resComment) {
         commentData.ytComment = faqs[c].question
-        // console.log("found FAQ",findFaq)
+        // end loop
         break;
+      } else {
+        console.log("Exist", resComment._id)
       }
     }
     
     
     console.log("for FAQ comment", commentData.ytComment)
 
-    if ( commentData.ytComment && process.env.ENVIRONMENT !== 'dev') {
+    if ( commentData.ytComment) {
       // console.log("to comment", commentData)
-      // return 
+      // return
+
+      if (process.env.ENVIRONMENT === 'dev') {
+        console.log("abort! on DEV MODE!")
+        rpoAssignments.update(assignment._id,{hasUncomment: true})
+        this.addCommentToVideos(counter+1)
+        return;
+      }
 
       let commentResponse = await this.insertComment(oauth2Client,commentData)
 
@@ -301,6 +332,8 @@ exports.addCommentToVideos = async function(req, res, next) {
     } else {
       // rpoVideos.update(video._id, {lastCrawled: moment().format()})
       console.log("No FAQ FOUND!");
+      rpoAssignments.update(assignment._id,{hasUncomment: false})
+      this.addCommentToVideos(counter+1)
     }
 
   } // close if has data fetch

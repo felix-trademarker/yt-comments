@@ -56,11 +56,12 @@ module.exports = {
     fetchOneCron : async function() {
 		return new Promise(function(resolve, reject) {
 
-			let query = {assigned:true};
+			let query = {hasUncomment:true};
+			// let query = {hasUncomment:true};
 			
             conn.getDb()
                 .collection(_table)
-                .find(query)
+                .find()
                 .limit(1)
 				.sort( { "lastCrawled": 1 } )
                 .toArray(function(err, result) {
