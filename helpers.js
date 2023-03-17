@@ -79,7 +79,7 @@ exports.getComments = async function(vidId) {
             }
             continuation = comments.continuation
         }
-        console.log(arrComments);
+        // console.log(arrComments);
 
     } while (continuation);
 

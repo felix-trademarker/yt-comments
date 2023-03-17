@@ -41,15 +41,9 @@ conn.connectToServer( function( err, client ) { // MAIN MONGO START
 
   app.use('/', publicRouter);
 
-  // test for CRON
-  // updaterService.updateAssignmentData()
-  
-  // sockpuppet | master puppet
-  // cron.schedule('0 */6 * * * *', () => {
-  //   console.log("==== CRON RUNNING ON PORT 3000 ====");
-  //   testService.addReplyCommentToVideos()
-  //   // testService.test()
-  // });
+
+  // testService.addReplyCommentToVideos()
+
   if(process.env.cronServe == "puppetMaster") {
     // console.log("puppetMaster")
     cron.schedule('0 */10 8-16 * * mon-fri', () => {
@@ -62,7 +56,7 @@ conn.connectToServer( function( err, client ) { // MAIN MONGO START
 
     cron.schedule('0 0 1 * * *', () => {
       console.log("==== UPDATE ASSIGNMENTS FROM MAIN COLLECTION ====");
-      // updaterService.upsertAssignment()
+
       updaterService.updateAssignmentData()
     }, {
       scheduled: true,

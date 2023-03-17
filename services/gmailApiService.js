@@ -179,7 +179,7 @@ exports.addCommentToVideos = async function(counter=1) {
   // }
 
   // end if counter > 400
-  if (counter > 400) {
+  if (counter > 20) {
     return;
   }
 
@@ -246,7 +246,7 @@ exports.addCommentToVideos = async function(counter=1) {
       // return 
       // rpoAssignments.update(assignment._id, {lastCrawled: moment().format()})
       console.log("CANCELLED: Traditional faq needs modification")
-      // this.addCommentToVideos(counter+1)
+      this.addCommentToVideos(counter+1)
       return;
     }
 
