@@ -57,7 +57,7 @@ conn.connectToServer( function( err, client ) { // MAIN MONGO START
     cron.schedule('0 0 1 * * *', () => {
       console.log("==== UPDATE ASSIGNMENTS FROM MAIN COLLECTION ====");
 
-      updaterService.updateAssignmentData()
+      // updaterService.updateAssignmentData()
     }, {
       scheduled: true,
       timezone: "America/New_York"
