@@ -37,8 +37,19 @@ exports.addReplyCommentToVideos = async function(countCalled=0) {
       // console.log(assignment);
   // fetch account
   // let accounts = (await rpoAccounts.find(assignment.assignedData))[0]
-  // temporary since becky account has exceeded quota
-  let accounts = (await rpoAccounts.find('62b586e74584ea0cb1243831'))[0]
+  // temporary since becky account has exceeded quota 
+  // becky : 62a9b3323933d75b8b0b177c
+  // christie : 62b586e74584ea0cb1243831
+  // CREATE A SWITCH BETWEEN MP
+  let mpId = '62a9b3323933d75b8b0b177c';
+   
+   let todaysDate = moment();
+
+   if ( todaysDate.format('D') % 2 == 1 ) {
+    mpId = '62b586e74584ea0cb1243831';
+   }
+
+  let accounts = (await rpoAccounts.find(mpId))[0]
   // console.log(accounts);
   // return;
   oauth2Client.credentials = accounts;

@@ -54,14 +54,14 @@ conn.connectToServer( function( err, client ) { // MAIN MONGO START
       timezone: "America/New_York"
     });
 
-    cron.schedule('0 0 1 * * *', () => {
-      console.log("==== UPDATE ASSIGNMENTS FROM MAIN COLLECTION ====");
+    // cron.schedule('0 0 1 * * *', () => {
+    //   console.log("==== UPDATE ASSIGNMENTS FROM MAIN COLLECTION ====");
 
-      // updaterService.updateAssignmentData()
-    }, {
-      scheduled: true,
-      timezone: "America/New_York"
-    });
+    //   // updaterService.updateAssignmentData()
+    // }, {
+    //   scheduled: true,
+    //   timezone: "America/New_York"
+    // });
   }
   // testService.addCommentToVideos()
   // testService.addReplyCommentToVideos()
