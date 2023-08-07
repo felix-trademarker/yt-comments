@@ -385,7 +385,7 @@ exports.insertComment = async function(auth, content) {
       },
     }, function(err, response) {
       if (err) {
-        reject(err)
+        return;
       }
       resolve(response)
     });
@@ -408,10 +408,10 @@ exports.insertReplyComment = async function(auth, content) {
       },
     }, function(err, response) {
       if (err) {
-        console.log('INSERT REPLY | The API returned an error: ' + err);
+        // console.log('INSERT REPLY | The API returned an error: ' + err);
         return;
       }
-      console.log(response);
+      // console.log(response);
     });
   
 }
@@ -436,7 +436,7 @@ exports.getComments = async function(auth, content) {
     }, function(err, response) {
       if (err) {
         console.log('GET COMMENTS | The API returned an error: ' + err);
-        reject(err)
+        return;
       }
   
       // if (response.data.items) {
@@ -474,7 +474,7 @@ exports.getGmailProfile = async function(auth) {
         
         }, (err, res) => {
 
-        if (err) reject(err);
+        if (err) return;
         resolve(res.data);
 
         });
