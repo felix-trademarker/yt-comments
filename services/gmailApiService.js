@@ -53,10 +53,10 @@ exports.addReplyCommentToVideos = async function(countCalled=0) {
   // console.log(accounts);
   // return;
   oauth2Client.credentials = accounts;
-  let commentData = {
-    ytId: assignment.youtubeID,
-    ytComment: "",
-  } 
+  // let commentData = {
+  //   ytId: assignment.youtubeID,
+  //   ytComment: "",
+  // } 
 
   // update assignments 1st to avoid infinite loop
   rpoAssignments.update(assignment._id, {lastCrawledReply: moment().format()})
@@ -78,7 +78,7 @@ exports.addReplyCommentToVideos = async function(countCalled=0) {
       let commentSnippet = findComment.text;
       let commentAnswer = "";
 
-      console.log("=== fetching youtube ID", assignment.youtubeID);
+      // console.log("=== fetching youtube ID", assignment.youtubeID);
 
       for(let f=0; f < assignment.items.length; f++) {
         // console.log("checking >> ", findAssignment.items[f].question);
@@ -122,7 +122,7 @@ exports.addReplyCommentToVideos = async function(countCalled=0) {
               let this_ = this;
               setTimeout(async function(){
                 
-                let comments = await this_.getComments(oauth2Client,contentReply)
+                // let comments = await this_.getComments(oauth2Client,contentReply)
                 contentReply.comments = comments
                 this_.ytReplyCommentNotification(contentReply)
 
@@ -143,7 +143,7 @@ exports.addReplyCommentToVideos = async function(countCalled=0) {
       
       } // end for loop
 
-      if (!commentAnswer) {
+      if (false && !commentAnswer) {
         // send email notification
         // console.log("send email notification regarding", videos[i].youtubeID, commentSnippet.textOriginal);
         let dataNotify = {
@@ -174,9 +174,9 @@ exports.addReplyCommentToVideos = async function(countCalled=0) {
 
   } // findcomments
   // RECALL THIS FUNCTION IF NO FOUND COMMENT
-  if (countCalled < 5 && !flagReply) {
-    this.addReplyCommentToVideos(countCalled+1)
-  }
+  // if (countCalled < 5 && !flagReply) {
+  //   this.addReplyCommentToVideos(countCalled+1)
+  // }
  
   // console.log(countCalled)
 }
@@ -411,7 +411,7 @@ exports.insertReplyComment = async function(auth, content) {
         // console.log('INSERT REPLY | The API returned an error: ' + err);
         return;
       }
-      // console.log(response);
+      console.log("Comment replied", content.ytComment);
     });
   
 }
