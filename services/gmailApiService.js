@@ -123,8 +123,8 @@ exports.addReplyCommentToVideos = async function(countCalled=0) {
               setTimeout(async function(){
                 
                 // let comments = await this_.getComments(oauth2Client,contentReply)
-                contentReply.comments = comments
-                this_.ytReplyCommentNotification(contentReply)
+                // contentReply.comments = comments
+                // this_.ytReplyCommentNotification(contentReply)
 
                 // update video record
                 rpoAssignments.update(assignment._id, {comments : comments})
