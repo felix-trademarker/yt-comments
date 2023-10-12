@@ -99,7 +99,7 @@ exports.addReplyCommentToVideos = async function(countCalled=0) {
           // }
 
           if(process.env.ENVIRONMENT !== 'dev'){
-            console.log("adding comment", contentReply.ytComment )
+            console.log("adding comment", contentReply )
             flagReply = true;
             // return
             this.insertReplyComment(oauth2Client, contentReply)
@@ -124,7 +124,7 @@ exports.addReplyCommentToVideos = async function(countCalled=0) {
                 
                 // let comments = await this_.getComments(oauth2Client,contentReply)
                 // contentReply.comments = comments
-                // this_.ytReplyCommentNotification(contentReply)
+                this_.ytReplyCommentNotification(contentReply)
 
                 // update video record
                 rpoAssignments.update(assignment._id, {comments : comments})
@@ -546,23 +546,23 @@ exports.ytCommentNotification = async function(data) {
 
 exports.ytReplyCommentNotification = async function(data) {
 
-  let commentHtml = "";
+  // let commentHtml = "";
 
-  if( data && data.comments ) {
-    for (let i=0; i < data.comments.length; i++) {
-      let comment = data.comments[i].snippet
-      let replies = data.comments[i].replies
-      let replyHtml = "<ul>"
-      if (replies) {
-        for (let r=0; r < replies.comments.length; r++) {
-          // console.log(replies)
-          replyHtml += `<li>${replies.comments[r].snippet.authorDisplayName} >>>> ${replies.comments[r].snippet.textOriginal}</li>`
-        }
-      }
+  // if( data && data.comments ) {
+  //   for (let i=0; i < data.comments.length; i++) {
+  //     let comment = data.comments[i].snippet
+  //     let replies = data.comments[i].replies
+  //     let replyHtml = "<ul>"
+  //     if (replies) {
+  //       for (let r=0; r < replies.comments.length; r++) {
+  //         // console.log(replies)
+  //         replyHtml += `<li>${replies.comments[r].snippet.authorDisplayName} >>>> ${replies.comments[r].snippet.textOriginal}</li>`
+  //       }
+  //     }
 
-      commentHtml += `<li>${comment.topLevelComment.snippet.authorDisplayName} >>> ${comment.topLevelComment.snippet.textOriginal} ${replyHtml}</li>`
-    }
-  }
+  //     commentHtml += `<li>${comment.topLevelComment.snippet.authorDisplayName} >>> ${comment.topLevelComment.snippet.textOriginal} ${replyHtml}</li>`
+  //   }
+  // }
 
   return await transporter.sendMail({
   sender: process.env.MAIL_FROM,
@@ -578,8 +578,7 @@ exports.ytReplyCommentNotification = async function(data) {
           <br>Youtube Link: https://www.youtube.com/watch?v=${data.ytId}
           <br>Reply Comment: ${data.ytComment}
           </p>
-          <p>***** Current Video Comments *****</p>
-          <ul>${commentHtml}</ul>
+         
       `, 
   });
   
