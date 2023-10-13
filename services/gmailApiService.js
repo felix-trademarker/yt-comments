@@ -40,16 +40,40 @@ exports.addReplyCommentToVideos = async function(countCalled=0) {
   // temporary since becky account has exceeded quota 
   // becky : 62a9b3323933d75b8b0b177c
   // christie : 62b586e74584ea0cb1243831
+
   // CREATE A SWITCH BETWEEN MP
-  let mpId = '62a9b3323933d75b8b0b177c';
+  // let mpId = '62a9b3323933d75b8b0b177c';
    
-   let todaysDate = moment();
+  //  let todaysDate = moment();
 
-   if ( todaysDate.format('D') % 2 == 1 ) {
-    mpId = '62b586e74584ea0cb1243831';
-   }
+  //  if ( todaysDate.format('D') % 2 == 1 ) {
+  //   mpId = '62b586e74584ea0cb1243831';
+  //  }
 
-  let accounts = (await rpoAccounts.find(mpId))[0]
+  let accounts = (await rpoAccounts.getMasterPuppet())[0]
+
+  if (accounts) {
+    console.log();
+    // check no of comments per day
+    if (moment().diff(moment(accounts.lastCrawled).format(),'days') > 0) {
+      console.log("more than 1 day");
+      accounts.counter = 0
+    }
+  }
+
+  rpoAccounts.update(accounts._id, {lastCrawled: moment().format(), counter: accounts.counter})
+  
+  if (accounts.counter >= 10) {
+    console.log("Master puppet per day limit replies", accounts.emailAddress);
+    return;
+  }
+
+  // console.log("--end test--");
+  // return;
+
+
+  
+  // let accounts = getMasterPuppet
   // console.log(accounts);
   // return;
   oauth2Client.credentials = accounts;
@@ -106,7 +130,7 @@ exports.addReplyCommentToVideos = async function(countCalled=0) {
 
             
             // add updates here
-            let postedFaq = await rpoPostedFaq.findQuery({ ytComment: commentSnippet })
+            // let postedFaq = await rpoPostedFaq.findQuery({ ytComment: commentSnippet })
             
             if(postedFaq && postedFaq.length > 0) {
 
@@ -124,7 +148,7 @@ exports.addReplyCommentToVideos = async function(countCalled=0) {
                 
                 // let comments = await this_.getComments(oauth2Client,contentReply)
                 // contentReply.comments = comments
-                this_.ytReplyCommentNotification(contentReply)
+                // this_.ytReplyCommentNotification(contentReply)
 
                 // update video record
                 rpoAssignments.update(assignment._id, {comments : comments})
@@ -395,6 +419,7 @@ exports.insertComment = async function(auth, content) {
 
 exports.insertReplyComment = async function(auth, content) {
 
+    var this_ = this
     var service = google.youtube('v3');
     service.comments.insert({
       auth: auth,
@@ -408,10 +433,13 @@ exports.insertReplyComment = async function(auth, content) {
       },
     }, function(err, response) {
       if (err) {
-        // console.log('INSERT REPLY | The API returned an error: ' + err);
+        console.log('INSERT REPLY | The API returned an error: ' + err);
         return;
       }
+
+      this_.ytReplyCommentNotification(content)
       console.log("Comment replied", content.ytComment);
+      rpoAccounts.update(auth.credentials._id, {lastCrawled: moment().format(), counter: (auth.credentials.counter+1)})
     });
   
 }

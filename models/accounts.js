@@ -65,7 +65,7 @@ module.exports = {
 
             // console.log(moment().subtract("1", "day").format());
 			// let query = {role: "commenter", lastCrawled : {$lte : moment().subtract("1", "day").format() }  }
-			let query = {role: 'replyComment'}
+			let query = { role: 'replyComment' }
 			
             conn.getDb()
                 .collection(_table)
