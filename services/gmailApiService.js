@@ -66,13 +66,15 @@ exports.addReplyCommentToVideos = async function(countCalled=0) {
   if (accounts.counter >= 10) {
     console.log("Master puppet per day limit replies", accounts.emailAddress);
     return;
+  } else {
+    console.log("Master puppet ", accounts.emailAddress);
   }
 
   // console.log("--end test--");
   // return;
 
 
-  
+  // console.log(accounts);
   // let accounts = getMasterPuppet
   // console.log(accounts);
   // return;
@@ -98,7 +100,7 @@ exports.addReplyCommentToVideos = async function(countCalled=0) {
       let findComment = findComments[fc]
       // console.log(findComment);
       // found
-      console.log("found unreplied comment",findComment.text);
+      // console.log("found unreplied comment",findComment.text);
       let commentSnippet = findComment.text;
       let commentAnswer = "";
 
@@ -109,7 +111,7 @@ exports.addReplyCommentToVideos = async function(countCalled=0) {
         if(commentSnippet.includes(assignment.items[f].question)){
           commentAnswer = assignment.items[f].answer
           console.log("found match");
-
+          f = assignment.items.length;
           // direct add comment
           let contentReply = {
             ytId: assignment.youtubeID,
@@ -122,15 +124,19 @@ exports.addReplyCommentToVideos = async function(countCalled=0) {
           //   return;
           // }
 
-          if(process.env.ENVIRONMENT !== 'dev'){
-            console.log("adding comment", contentReply )
+          if(true || process.env.ENVIRONMENT !== 'dev'){
+            // console.log("adding comment", contentReply )
             flagReply = true;
             // return
+
+            contentReply.puppetMaster = accounts
+            contentReply.dateCreated = moment().format()
+
             this.insertReplyComment(oauth2Client, contentReply)
 
             
             // add updates here
-            // let postedFaq = await rpoPostedFaq.findQuery({ ytComment: commentSnippet })
+            let postedFaq = await rpoPostedFaq.findQuery({ ytComment: commentSnippet })
             
             if(postedFaq && postedFaq.length > 0) {
 
@@ -160,9 +166,7 @@ exports.addReplyCommentToVideos = async function(countCalled=0) {
           } else {
             console.log("disable commenting on development environment");
           }
-
-        } else {
-          console.log("not found");
+          return;
         }
       
       } // end for loop
@@ -196,6 +200,8 @@ exports.addReplyCommentToVideos = async function(countCalled=0) {
       } // close not comment answer
     } // end for loop
 
+  } else {
+    console.log("= No unreplied comments found=");
   } // findcomments
   // RECALL THIS FUNCTION IF NO FOUND COMMENT
   // if (countCalled < 5 && !flagReply) {
@@ -418,7 +424,7 @@ exports.insertComment = async function(auth, content) {
 }
 
 exports.insertReplyComment = async function(auth, content) {
-
+  // console.log(content);
     var this_ = this
     var service = google.youtube('v3');
     service.comments.insert({
@@ -426,7 +432,6 @@ exports.insertReplyComment = async function(auth, content) {
       part: ["snippet"],
       requestBody: {
         snippet: {
-          videoId: content.ytId,
           parentId: content.ytParentId,
           textOriginal: content.ytComment,
         },
@@ -434,6 +439,7 @@ exports.insertReplyComment = async function(auth, content) {
     }, function(err, response) {
       if (err) {
         console.log('INSERT REPLY | The API returned an error: ' + err);
+        rpoAccounts.update(content.puppetMaster._id, {lastCrawled: moment().add(3,'days').format()})
         return;
       }
 
@@ -602,7 +608,6 @@ exports.ytReplyCommentNotification = async function(data) {
   subject: (data.puppetMaster.displayName ? data.puppetMaster.displayName : 'Puppet Master') + " replied to a comment in Youtube ID " + data.ytId + " at " +moment().format('MMMM Do YYYY, h:mm:ss a'), 
   html: `<p>Hi Admin,</p>
           <p>Puppet Master: ${(data.puppetMaster.displayName ? data.puppetMaster.displayName : 'Puppet Master')}
-          <br>Sock Puppet: ${(data.puppet.displayName ? data.puppet.displayName : 'Sock Master')}
           <br>Youtube Link: https://www.youtube.com/watch?v=${data.ytId}
           <br>Reply Comment: ${data.ytComment}
           </p>
