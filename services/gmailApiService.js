@@ -445,7 +445,7 @@ exports.insertReplyComment = async function(auth, content) {
 
       this_.ytReplyCommentNotification(content)
       console.log("Comment replied", content.ytComment);
-      rpoAccounts.update(auth.credentials._id, {lastCrawled: moment().format(), counter: (auth.credentials.counter+1)})
+      rpoAccounts.update(content.puppetMaster._id, {lastCrawled: moment().format(), counter: (content.puppetMaster.counter+1)})
     });
   
 }

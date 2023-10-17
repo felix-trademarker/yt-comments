@@ -46,7 +46,7 @@ conn.connectToServer( function( err, client ) { // MAIN MONGO START
 
   if(process.env.cronServe == "puppetMaster") {
     // console.log("puppetMaster")
-    cron.schedule('0 */10 8-16 * * mon-fri', () => {
+    cron.schedule('0 */45 9-16 * * mon-fri', () => {
       console.log("==== CRON RUNS EVERY 10MIN FOR PUPPET MASTERS FROM 9AM-4PM TIMEZONE: America/New_York ====");
       testService.addReplyCommentToVideos()
     }, {
