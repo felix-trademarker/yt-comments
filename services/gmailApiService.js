@@ -50,15 +50,13 @@ exports.addReplyCommentToVideos = async function(countCalled=0) {
   //   mpId = '62b586e74584ea0cb1243831';
   //  }
 
-  
-
- 
+  let accounts = (await rpoAccounts.getMasterPuppet())[0]
 
   if (accounts) {
 
     // check no of comments per day
-    if (moment().diff(moment(accounts.lastCrawled).format(),'hours') > 11) {
-      console.log("Reset counters more than 11 hours");
+    if (moment().diff(moment(accounts.lastCrawled).format(),'days') > 0) {
+      console.log("more than 1 day");
       accounts.counter = 0
     }
   }
