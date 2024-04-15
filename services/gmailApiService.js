@@ -175,13 +175,14 @@ exports.addReplyCommentToVideos = async function(countCalled=0) {
     } // end for loop
 
   } else {
-    console.log("= No unreplied comments found=");
-    if (countCalled < 10) {
-      this.addReplyCommentToVideos(countCalled+1)
-    }
+    // console.log("= No unreplied comments found =", countCalled);
+    // if (countCalled < 10) {
+    //   this.addReplyCommentToVideos(countCalled+1)
+    // }
   } // findcomments
   // RECALL THIS FUNCTION IF NO FOUND COMMENT
   if (countCalled < 10 && !flagReply) {
+    console.log("= No unreplied comments or matching FAQ found =", countCalled);
     this.addReplyCommentToVideos(countCalled+1)
   }
  
