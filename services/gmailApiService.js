@@ -94,8 +94,8 @@ exports.addReplyCommentToVideos = async function(countCalled=0) {
 
   // let findComment = await comments.find(c => c.snippet.totalReplyCount > 0);
   let findComments = await comments.filter(c => c.numReplies < 1);
-
-  if(findComments) {
+  console.log(findComments, assignment.youtubeID);
+  if(findComments && findComments.length > 0) {
     for(let fc=0; fc < findComments.length; fc++){
       let findComment = findComments[fc]
       // console.log(findComment);
@@ -171,42 +171,19 @@ exports.addReplyCommentToVideos = async function(countCalled=0) {
       
       } // end for loop
 
-      if (false && !commentAnswer) {
-        // send email notification
-        // console.log("send email notification regarding", videos[i].youtubeID, commentSnippet.textOriginal);
-        let dataNotify = {
-          commentSnippet : commentSnippet,
-          youtubeID: assignment.youtubeID
-        }
 
-        let findNotifyData = {
-          youtubeID:assignment.youtubeID,
-          commentId:findComment.commentId
-        }
-        let findNotification = await rpoEmailNotifications.findQuery(findNotifyData)
-        
-        // console.log(findNotification);
-        if(findNotification && findNotification.length == 0) {
-          
-          findNotifyData.commentSnippet = commentSnippet
-          rpoEmailNotifications.put(findNotifyData)
-
-          if(process.env.ENVIRONMENT !== 'dev' && moment().diff(moment(commentSnippet.publishedAt),"weeks") < 4){
-            // this.ytNotification(dataNotify)
-          }
-
-        }
-        // this.ytNotification(dataNotify)
-      } // close not comment answer
     } // end for loop
 
   } else {
     console.log("= No unreplied comments found=");
+    if (countCalled < 10) {
+      this.addReplyCommentToVideos(countCalled+1)
+    }
   } // findcomments
   // RECALL THIS FUNCTION IF NO FOUND COMMENT
-  // if (countCalled < 5 && !flagReply) {
-  //   this.addReplyCommentToVideos(countCalled+1)
-  // }
+  if (countCalled < 10 && !flagReply) {
+    this.addReplyCommentToVideos(countCalled+1)
+  }
  
   // console.log(countCalled)
 }
