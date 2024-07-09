@@ -42,7 +42,7 @@ conn.connectToServer( function( err, client ) { // MAIN MONGO START
   app.use('/', publicRouter);
 
 
-  testService.addReplyCommentToVideos()
+  // testService.addReplyCommentToVideos()
 
   // ACTIVATE ONLY WHEN NEW ENTRIES ARE ADDED IN cp.productions.jobs
   // updaterService.updateAssignmentData()
