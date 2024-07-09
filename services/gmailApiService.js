@@ -53,7 +53,6 @@ exports.addReplyCommentToVideos = async function(countCalled=0) {
   let accounts = (await rpoAccounts.getMasterPuppet())[0]
 
   if (accounts) {
-
     // check no of comments per day
     if (moment().diff(moment(accounts.lastCrawled).format(),'days') > 0) {
       console.log("more than 1 day");
@@ -70,22 +69,15 @@ exports.addReplyCommentToVideos = async function(countCalled=0) {
     console.log("Master puppet ", accounts.emailAddress);
   }
 
-  // console.log("--end test--");
-  // return;
 
-
-  // console.log(accounts);
-  // let accounts = getMasterPuppet
-  // console.log(accounts);
+  // console.log(assignment);
   // return;
   oauth2Client.credentials = accounts;
-  // let commentData = {
-  //   ytId: assignment.youtubeID,
-  //   ytComment: "",
-  // } 
+
 
   // update assignments 1st to avoid infinite loop
   rpoAssignments.update(assignment._id, {lastCrawledReply: moment().format()})
+
   // return;
   // check video for comment that doesn't have any reply
   // let comments = await this.getComments(oauth2Client,commentData)
@@ -108,9 +100,11 @@ exports.addReplyCommentToVideos = async function(countCalled=0) {
 
       for(let f=0; f < assignment.items.length; f++) {
         // console.log("checking >> ", findAssignment.items[f].question);
-        if(commentSnippet.includes(assignment.items[f].question)){
+        if(commentSnippet.includes(assignment.items[f].question) && assignment.items[f].answer ){
           commentAnswer = assignment.items[f].answer
+          console.log(assignment.items[f])
           console.log("found match");
+          
           f = assignment.items.length;
           // direct add comment
           let contentReply = {
@@ -119,13 +113,8 @@ exports.addReplyCommentToVideos = async function(countCalled=0) {
             ytComment: commentAnswer
           }
 
-          // if (moment().diff(moment(commentSnippet.publishedAt),"minutes") < 12) {
-          //   console.log("Too early to reply")
-          //   return;
-          // }
-
           if(true || process.env.ENVIRONMENT !== 'dev'){
-            // console.log("adding comment", contentReply )
+
             flagReply = true;
             // return
 
@@ -175,13 +164,13 @@ exports.addReplyCommentToVideos = async function(countCalled=0) {
     } // end for loop
 
   } else {
-    // console.log("= No unreplied comments found =", countCalled);
+    console.log("else");
     // if (countCalled < 10) {
     //   this.addReplyCommentToVideos(countCalled+1)
     // }
   } // findcomments
   // RECALL THIS FUNCTION IF NO FOUND COMMENT
-  if (countCalled < 10 && !flagReply) {
+  if (!flagReply) {
     console.log("= No unreplied comments or matching FAQ found =", countCalled);
     this.addReplyCommentToVideos(countCalled+1)
   }
@@ -212,20 +201,20 @@ exports.addCommentToVideos = async function(counter=1) {
   rpoAssignments.update(assignment._id,assignmentData)
 
   // if simplified fetch from production and update items
-  if (assignment.type == 'simplified' && assignment.items ) {
-    // UPDATE ITEMS FROM MAIN
-    console.log(assignment.ID)
-    let assignmentsMain = (await rpoAssignmentsMain.findQuery({ID:assignment.ID}))[0]
-    // console.log(assignmentsMain)
-    if (assignmentsMain && assignmentsMain.items) {
-      assignment.items = assignmentsMain.items
-      assignmentData.items = assignment.items
-      console.log("updating assignment", assignment.ID)
+  // if (assignment.type == 'simplified' && assignment.items ) {
+  //   // UPDATE ITEMS FROM MAIN
 
-      rpoAssignments.update(assignment._id,assignmentData)
-    }
+  //   let assignmentsMain = (await rpoAssignmentsMain.findQuery({ID:assignment.ID}))[0]
+  //   // console.log(assignmentsMain)
+  //   if (assignmentsMain && assignmentsMain.items) {
+  //     assignment.items = assignmentsMain.items
+  //     assignmentData.items = assignment.items
+  //     console.log("updating assignment", assignment.ID)
+
+  //     rpoAssignments.update(assignment._id,assignmentData)
+  //   }
     
-  }
+  // }
 
   
 
@@ -241,6 +230,8 @@ exports.addCommentToVideos = async function(counter=1) {
 
     let accounts = (await rpoAccounts.getPuppet())[0]
     oauth2Client.credentials = accounts;
+
+    // console.log(accounts)
 
     let lastPosted = await rpoPostedFaq.fetchLatest()
     let puppetPostedToday = await rpoPostedFaq.findQuery({ "puppet.emailAddress": accounts.emailAddress, dateCreated: { $gte: moment().format("YYYY-MM-DD") } })
@@ -269,7 +260,7 @@ exports.addCommentToVideos = async function(counter=1) {
       return;
     }
 
-    console.log("**** continue *******", assignment.type);
+    // console.log("**** continue *******", assignment.type);
 
     let faqs = assignment.items
 
@@ -282,8 +273,8 @@ exports.addCommentToVideos = async function(counter=1) {
     // let ytCommentsArr= await helpers.getComments(assignment.youtubeID)
     
     // FIND FAQ's
-    console.log("faq length", faqs.length)
-    console.log("faq",assignment.youtubeID ,faqs)
+    // console.log("faq length", faqs.length)
+    console.log("faq",assignment.youtubeID)
     for(let c=0; c < faqs.length; c++) {
       // let resComment = ytCommentsArr.find(({ text }) => text === faqs[c].question);
       // if (!resComment) {
@@ -303,9 +294,9 @@ exports.addCommentToVideos = async function(counter=1) {
     }
     
     
-    console.log("for FAQ comment", commentData.ytComment)
+    // console.log("for FAQ comment", commentData.ytComment)
 
-    if ( commentData.ytComment) {
+    if ( commentData.ytComment && assignment.youtubeID) {
       // console.log("to comment", commentData)
       // return
 
@@ -316,8 +307,24 @@ exports.addCommentToVideos = async function(counter=1) {
         return;
       }
 
-      let commentResponse = await this.insertComment(oauth2Client,commentData)
+      // check video exists
+      console.log("checking YT VIDEOS EXISTS ", assignment.youtubeID)
+      // if (! commentData.ytId ) {
+      //   rpoAssignments.update(assignment._id,{ytExists: false})
+      //   this.addCommentToVideos(counter+1)
+      //   console.log("No youtube ID found")
+      //   return;
+      // }
 
+      if (! await this.checkVideoExist(oauth2Client, assignment.youtubeID)) {
+        rpoAssignments.update(assignment._id,{ytExists: false})
+        this.addCommentToVideos(counter+1)
+        console.log(">>>>>>>>>>>>>>>>>>  Video not exist <<<<<<<<<<<<<<<<<<")
+        return;
+      }
+
+      let commentResponse = await this.insertComment(oauth2Client,commentData)
+      console.log("Comment response",commentResponse);
       if (commentResponse && commentResponse.status == 200) {
         // success posting faq
         // save to repo and update lastcrawl to each data
@@ -355,6 +362,8 @@ exports.addCommentToVideos = async function(counter=1) {
 
         }, 5000);
 
+      } else {
+        console.log("ERROR: ", commentResponse)
       }
 
     } else {
@@ -376,10 +385,10 @@ exports.insertComment = async function(auth, content) {
 
   return new Promise(function(resolve, reject) {
 
-    var service = google.youtube('v3');
+    var service = google.youtube({ version: 'v3', auth });
     // console.log(auth)
     service.commentThreads.insert({
-      auth: auth,
+      // auth: auth,
       part: ["snippet"],
       requestBody: {
         snippet: {
@@ -393,7 +402,7 @@ exports.insertComment = async function(auth, content) {
       },
     }, function(err, response) {
       if (err) {
-        return;
+        reject(err)
       }
       resolve(response)
     });
@@ -512,6 +521,23 @@ exports.ytNotification = async function(data) {
           <p></p>
       `, 
   });
+  
+}
+
+exports.checkVideoExist = async function(auth, videoId) {
+
+    var service = google.youtube({ version: 'v3', auth });
+    
+    const response = await service.videos.list({
+      part: 'snippet',
+      id: videoId
+    });
+
+    if (response.data.items.length === 0) {
+      return 0;
+    } else {
+      return 1;
+    }
   
 }
 

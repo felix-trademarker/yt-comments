@@ -42,7 +42,11 @@ conn.connectToServer( function( err, client ) { // MAIN MONGO START
   app.use('/', publicRouter);
 
 
-  // testService.addReplyCommentToVideos()
+  testService.addReplyCommentToVideos()
+
+  // ACTIVATE ONLY WHEN NEW ENTRIES ARE ADDED IN cp.productions.jobs
+  // updaterService.updateAssignmentData()
+  // updaterService.assignYoutubeID()
 
   if(process.env.cronServe == "puppetMaster") {
     // console.log("puppetMaster")
@@ -54,20 +58,23 @@ conn.connectToServer( function( err, client ) { // MAIN MONGO START
       timezone: "America/New_York"
     });
 
-    // cron.schedule('0 0 1 * * *', () => {
-    //   console.log("==== UPDATE ASSIGNMENTS FROM MAIN COLLECTION ====");
+    // updaterService.updateAssignmentData()
+    
+    cron.schedule('0 0 1 * * *', () => {
+      console.log("==== UPDATE ASSIGNMENTS FROM MAIN COLLECTION ====");
 
-    //   // updaterService.updateAssignmentData()
-    // }, {
-    //   scheduled: true,
-    //   timezone: "America/New_York"
-    // });
+      // updaterService.updateAssignmentData()
+    }, {
+      scheduled: true,
+      timezone: "America/New_York"
+    });
   }
   // testService.addCommentToVideos()
   // testService.addReplyCommentToVideos()
   
   // puppet 
   if(process.env.cronServe == "sockPuppet") {
+    // testService.addCommentToVideos()
     // console.log("sockPuppet")
     cron.schedule(process.env.jobSchedulePuppet, () => {
       console.log("==== CRON RUNS EVERY 13MIN-21MIN RAND FOR PUPPETS ====");

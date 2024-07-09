@@ -3,6 +3,7 @@ const nodemailer = require("nodemailer");
 let rpoAccounts = require('../models/accounts');
 let rpoVideos = require('../models/videos');
 let rpoVideoList = require('../models/videoList');
+let rpoAssignmentsMain = require('../models/assignmentsMain');
 let rpoAssignments = require('../models/assignments');
 let rpoEmailNotifications = require('../models/emailNotification');
 let rpoPostedFaq = require('../models/postedFaq');
@@ -14,7 +15,8 @@ var OAuth2 = google.auth.OAuth2;
 let helpers = require('../helpers')
 
 let moment = require('moment')
-let hanzi = require('hanzi')
+let hanzi = require('hanzi');
+const { upsert } = require("../models/comments");
 
 // let fetchCommentPage = require('youtube-comment-api')
 
@@ -271,21 +273,76 @@ exports.updateAssignments = async function() {
 exports.updateAssignmentData = async function() {
 
   // let assignments = await rpoAssignments.get()
-  let assignments = await rpoAssignments.getSelected([{ $project : { youtubeID : 1 } }])
-  console.log(assignments)
+  let assignments = await rpoAssignmentsMain.findQuery({jobType: {$exists:true}})
+  console.log(assignments.length)
   // return;
   for (let i=0; i < assignments.length; i++) {
     let assignment = assignments[i]
 
-    console.log("CHECKING >>> ", assignment.youtubeID);
-    let ytCommentsArr = await helpers.getComments(assignment.youtubeID)
-      // update assignment and mark has uncomment
-      let assignData = {
-        comments : ytCommentsArr
+    let ytAssignment = await rpoAssignments.findQuery({jobType: assignment.jobType})
+
+    if (ytAssignment.length > 0) {
+      console.log("found record and update items");
+      let lessonId = (assignment.jobType.split("/"))[1]
+      // console.log(lessonId)
+      let youtubeId = (await rpoVideoList.findQuery({lesson: lessonId}))[0]
+      await rpoAssignments.upsert({jobType: assignment.jobType},{items:assignment.items, youtubeID: youtubeId.youtubeID})
+    } else {
+      console.log("Add new record to YT Assignments", assignment.jobType);
+      let lessonId = (assignment.jobType.split("/"))[1]
+      console.log(lessonId)
+      let youtubeId = (await rpoVideoList.findQuery({lesson: lessonId}))[0]
+
+      if (youtubeId) {
+        assignment.youtubeID
+        console.log("add assignment record");
+        delete assignment._id
+        rpoAssignments.put(assignment)
+      } else {
+        console.log("Can't find youtube ID");
       }
-      console.log("updating", assignData);
-      rpoAssignments.update(assignment._id, assignData)
+    }
+
   }
 
   console.log(">>>>DONE<<<<");
 }
+// { youtubeID: {$exists: false} }
+exports.assignYoutubeID = async function() {
+
+  let ytAssignment = await rpoAssignments.findQuery({hasUncomment: {$exists:false}})
+
+  for (let i=0; i < ytAssignment.length; i++) {
+    let assignment = ytAssignment[i]
+    console.log("update job",assignment.jobType)
+    await rpoAssignments.upsert({jobType: assignment.jobType},{hasUncomment:true})
+
+  }
+
+  console.log(">>>>DONE<<<<");
+}
+
+// 4626
+// 4627
+// 4628
+// 8472
+// 8474
+// 8473
+// 8475
+// 8476
+// 8477
+// 8479
+// 8478
+// 8480
+// 4223
+// 4625
+// 4624
+// 4622
+// 4623
+// 0361
+// 0170
+// 0353
+// 0430
+// 0174
+// 0162
+// 0466

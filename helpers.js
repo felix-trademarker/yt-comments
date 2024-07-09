@@ -47,41 +47,51 @@ exports.getComments = async function(vidId) {
 
     let continuation = null;
     let arrComments = []
-
+    const { google } = require('googleapis');
+    let nextPageToken = '';
     do {
 
-        let payload = {
+        // let payload = {
+        //     videoId: vidId,
+        //     continuation: continuation,
+        // }
+
+        const youtube = google.youtube({
+            version: 'v3',
+            auth: process.env.googleApi
+          });
+
+        const response = await youtube.commentThreads.list({
+            part: 'snippet',
             videoId: vidId,
-            continuation: continuation,
-        }
-        
-        let comments = await ytcm.getComments(payload).then((data) =>{
-            // console.log(data.comments);
-            return data;
-        }).catch((error)=>{
-            // console.log(error);
-            return null;
+            maxResults: 100,
+            pageToken: nextPageToken
         });
+        // console.log(response);
 
-        if (comments) {
-            // push to arr comments
-            for(let i=0; i < comments.comments.length; i++) {
-                let c = comments.comments[i]
-                let ytData = {
-                    text: c.text, 
-                    numReplies: c.numReplies,
-                    vidId: vidId,
-                    commentId: c.commentId
-                }
-                arrComments.push(ytData)
+        let comments = response.data.items.map(item => {
+            console.log(item)
+            const comment = item.snippet.topLevelComment.snippet;
+            // return item.snippet.topLevelComment.snippet;
 
-                await rpoComments.upsert({vidId: vidId,text: c.text }, ytData)
+            
+
+            let ytData = {
+                text: comment.textOriginal,
+                numReplies: item.snippet.totalReplyCount,
+                vidId: vidId,
+                commentId: item.snippet.topLevelComment.id
             }
-            continuation = comments.continuation
-        }
-        // console.log(arrComments);
 
-    } while (continuation);
+            arrComments.push(ytData)
+            // console.log(ytData)
+            rpoComments.upsert({vidId: vidId,text: ytData.text }, ytData)
+            
+        });
+      
+        nextPageToken = response.data.nextPageToken;
+
+    } while (nextPageToken);
 
     // console.log(arrComments);
 

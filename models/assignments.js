@@ -56,8 +56,8 @@ module.exports = {
     fetchOneCron : async function() {
 		return new Promise(function(resolve, reject) {
 
+			// let query = {hasUncomment:true, ytExist:{$exists:false}};
 			let query = {hasUncomment:true};
-			// let query = {hasUncomment:true};
 			
             conn.getDb()
                 .collection(_table)
@@ -80,7 +80,7 @@ module.exports = {
     fetchOneCron2 : async function() {
 		return new Promise(function(resolve, reject) {
 
-			let query = {comments:{$exists:true}};
+			let query = {hasUnReplied:true};
 			
             conn.getDb()
                 .collection(_table)
